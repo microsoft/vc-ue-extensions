@@ -49,8 +49,15 @@ param(
     $Project="",
 
     [Parameter(Mandatory=$false)]
-    [switch]
-    $BuildOnly=$False
+    [string]
+    [validateset('Yes', 'No', 'Force')]
+    # Whether to copy the binaries to the target project or engine.
+    # Defaults to 'Yes', which does not overwrites existing content. 'Force' will ovewrite an existing folder.
+    $CopyToTarget='Yes',
+
+    [Parameter(Mandatory=$false)]
+    [string]
+    $RelativeBuildPath="bin"
 )
 
 function Get-UnrealEngine
@@ -71,17 +78,29 @@ $EnginePath = switch ($PSCmdlet.ParameterSetName) {
     'InstalledVersion' { Get-UnrealEngine $InstalledVersion }
 }
 
+$buildPath = [IO.Path]::Combine($pwd, $RelativeBuildPath, 'VisualStudioTools')
 $uat = Join-Path -Path $EnginePath -ChildPath 'Build\BatchFiles\RunUAT.bat'
 
-$buildPath = "$pwd\bin\VisualStudioTools";
 & $uat BuildPlugin -Plugin="$pwd\VisualStudioTools.uplugin" -TargetPlatforms=Win64 -Package="$buildPath"
 
-if (-not $BuildOnly)
-{
-    $pluginsPath = switch ($Project -eq "") {
-        $True { Join-Path $EnginePath -ChildPath 'Plugins' }
-        $False { Join-Path -Path (Get-ChildItem -Path $Project -File).DirectoryName -ChildPath "Plugins" }
-    }
-
-    Move-Item -Path $buildPath -Destination $pluginsPath
+$pluginsPath = switch ($Project -eq "") {
+    $True { Join-Path $EnginePath -ChildPath 'Plugins' }
+    $False { Join-Path -Path (Get-ChildItem -Path $Project -File).DirectoryName -ChildPath "Plugins" }
 }
+
+switch ($CopyToTarget) {
+    'Yes' {
+        if (Test-Path $pluginsPath -PathType Container) {
+            throw "Destination plugin folder already exisits. Use `-CopyToTarget Force` if you intend to overwrite it."
+        }
+
+        Move-Item -Path $buildPath -Destination $pluginsPath
+    }
+    'Force' {
+        Move-Item -Path $buildPath -Destination $pluginsPath -Force 
+    }
+    'No' {
+        # noop
+    } 
+}
+

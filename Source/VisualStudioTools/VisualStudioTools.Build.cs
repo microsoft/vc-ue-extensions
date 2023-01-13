@@ -16,7 +16,7 @@ public class VisualStudioTools : ModuleRules
         // with a detection of support via version numbers.
         // If the check is producing a false positive/negative in your version of the engine
         // You can uncomment the line before and force the check as enabled/disabled.
-        PrivateDefinitions.Add("FILTER_ASSETS_BY_CLASS_PATH=0");
+        // PrivateDefinitions.Add("FILTER_ASSETS_BY_CLASS_PATH=0");
 
         PublicDependencyModuleNames.AddRange(
             new[]

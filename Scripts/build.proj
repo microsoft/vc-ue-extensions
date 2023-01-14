@@ -1,0 +1,18 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <UnrealVersion Condition=" '$(UnrealVersion)'=='' ">5.1</UnrealVersion>
+        <OutputPath Condition=" '$(OutputPath)'=='' ">bin\</OutputPath>
+        <PluginFolder>$([System.IO.Path]::GetDirectoryName($(MSBuildProjectDirectory)))</PluginFolder>
+        <PluginFile>$([System.IO.Path]::Combine($(PluginFolder), `VisualStudioTools.uplugin`))</PluginFile>
+        <PackagePath>$([System.IO.Path]::Combine($(PluginFolder), $(OutputPath)))</PackagePath>
+        <PowerShellExe>$(WINDIR)\System32\WindowsPowerShell\v1.0\powershell.exe</PowerShellExe>
+        <ScriptLocation>$([System.IO.Path]::Combine($(MSBuildProjectDirectory), `Build-Plugin.ps1`))</ScriptLocation>
+    </PropertyGroup>
+    <Target Name="Build">
+        <MakeDir Directories="$(PackagePath)" Condition="!Exists('$(PackagePath)')" />
+        <Exec Command="$(PowerShellExe) -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Unrestricted -c &quot;&amp; { &amp; &apos;$(ScriptLocation)&apos; -InstalledVersion $(UnrealVersion) -PluginFile &apos;$(PluginFile)&apos; -CopyToTarget No -PackagePath &apos;$(PackagePath)&apos; } &quot;" />
+    </Target>
+    <Target Name="Clean" >
+        <RemoveDir Directories="$(PackagePath);"/>
+    </Target>
+</Project>

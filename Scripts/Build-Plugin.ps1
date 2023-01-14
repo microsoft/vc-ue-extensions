@@ -50,6 +50,11 @@ param(
 
     [Parameter(Mandatory=$false)]
     [string]
+    # The plugin descriptor file to compile. Defaults to using a file with the `uplugin` extension in `$pwd.
+    $PluginFile="*.uplugin",
+
+    [Parameter(Mandatory=$false)]
+    [string]
     [validateset('Yes', 'No', 'Force')]
     # Whether to copy the binaries to the target project or engine.
     # Defaults to 'Yes', which does not overwrites existing content. 'Force' will ovewrite an existing folder.
@@ -57,7 +62,9 @@ param(
 
     [Parameter(Mandatory=$false)]
     [string]
-    $RelativeBuildPath="bin"
+    # The temp folder to save the binaries of the plugin package.
+    # Will be moved to the target project or engine, unless `-CopyToTarget No` is passed.
+    $PackagePath="bin"
 )
 
 function Get-UnrealEngine
@@ -78,10 +85,12 @@ $EnginePath = switch ($PSCmdlet.ParameterSetName) {
     'InstalledVersion' { Get-UnrealEngine $InstalledVersion }
 }
 
-$buildPath = [IO.Path]::Combine($pwd, $RelativeBuildPath, 'VisualStudioTools')
+$plugin = get-item $PluginFile
+$buildPath = [IO.Path]::Combine($PackagePath, $plugin.BaseName)
 $uat = Join-Path -Path $EnginePath -ChildPath 'Build\BatchFiles\RunUAT.bat'
 
-& $uat BuildPlugin -Plugin="$pwd\VisualStudioTools.uplugin" -TargetPlatforms=Win64 -Package="$buildPath"
+# Execute the UAT script
+& $uat BuildPlugin -Plugin="$plugin" -TargetPlatforms=Win64 -Package="$buildPath"
 
 $pluginsPath = switch ($Project -eq "") {
     $True { Join-Path $EnginePath -ChildPath 'Plugins' }
@@ -97,7 +106,7 @@ switch ($CopyToTarget) {
         Move-Item -Path $buildPath -Destination $pluginsPath
     }
     'Force' {
-        Move-Item -Path $buildPath -Destination $pluginsPath -Force 
+        Move-Item -Path $buildPath -Destination $pluginsPath -Force
     }
     'No' {
         # noop

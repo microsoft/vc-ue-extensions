@@ -1,0 +1,30 @@
+trigger:
+- main
+
+pr:
+  autoCancel: true
+  branches:
+    include:
+      - main
+      - dev/*
+
+pool:
+  vmImage: windows-latest
+
+steps:
+- task: PoliCheck@2
+  inputs:
+    targetType: 'F'
+    targetArgument: '$(Build.SourcesDirectory)'
+
+- task: ComponentGovernanceComponentDetection@0
+  displayName: 'Component Detection'
+
+- task: AntiMalware@4
+  inputs:
+    InputType: 'Basic'
+    ScanType: 'CustomScan'
+    FileDirPath: '$(Build.StagingDirectory)'
+    TreatSignatureUpdateFailureAs: 'Warning'
+    SignatureFreshness: 'UpToDate'
+    TreatStaleSignatureAs: 'Error'

@@ -83,7 +83,7 @@ For more information about the command line parameters of the commandlet, run it
 
 ## Troubleshooting
 
-If there are errors in VS while running the blueprint scan, you can try some of the options in [this page](Docs/troubleshooting.md). We are updating that guide based on feedback from customers, so if you have any suggestions, you can follow the steps described in the [support](./SUPPORT.md) page.
+If there are errors in VS while running the blueprint scan, you can try some of the options in [this page](Docs/Troubleshooting.md). We are updating that guide based on feedback from customers, so if you have any suggestions, you can follow the steps described in the [support](SUPPORT.md) page.
 
 ## Contributing
 
@@ -101,7 +101,7 @@ contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additio
 
 ### Code Style Guide
 
-The code in the repo follows the existing code conventions described in the Unreal Engine's [Code Standard document](https://docs.unrealengine.com/5.1/en-US/epic-cplusplus-coding-standard-for-unreal-engine/).
+The code in the repo follows the existing code conventions described in the Unreal Engine's [Code Standard document](https://docs.unrealengine.com/INT/epic-cplusplus-coding-standard-for-unreal-engine/).
 
 ## Trademarks
 

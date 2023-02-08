@@ -4,7 +4,7 @@
 
 This project uses the [Visual Studio Developer Community](https://developercommunity.visualstudio.com/cpp) to track bugs and feature requests. Please search the existing feedback before filing new ones to avoid duplicates.
 
-If you have an issue running the tool inside Visual Studio, you can try some of the options in the [Troubleshooting](./Docs/troubleshooting.md) page.
+If you have an issue running the tool inside Visual Studio, you can try some of the options in the [Troubleshooting](/Docs/Troubleshooting.md) page.
 
 ## Microsoft Support Policy
 

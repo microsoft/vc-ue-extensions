@@ -28,9 +28,9 @@ For real world projects, scanning the blueprints information might take several 
 
 Possible causes are the plugin not being installed correctly or installed but not yet enabled for the game project (which is required on installation from the Marketplace).
 
-- See [this section](https://github.com/microsoft/vc-ue-extensions/blob/main/README.md#building-and-installing) for installation instructions.
+- See [this section](../README.md#building-and-installing) for installation instructions.
 
-- See [this section](https://github.com/microsoft/vc-ue-extensions/blob/main/README.md#optional-enabling-the-plugin) for instructions on how to enable the plugin.
+- See [this section](../README.md#optional-enabling-the-plugin) for instructions on how to enable the plugin.
 
 ### Message "Command finished with exit code 1" without other errors
 

@@ -44,6 +44,23 @@ If that does not work (e.g. UE is not building the plugin when building the proj
 1. Using the plugin manager in the Unreal Editor and selecting `VisualStudioTools`.
 2. Manually editing the `.uproject` descriptor for the game project and add an entry for the plugin.
 
+In both options the end result should be a new entry in the `Plugins` array in the JSON file.
+
+```JSON
+{
+	"FileVersion": 3,
+	"Category": "...",
+	"Description": "...",
+	"Modules": ["..."],
+	"Plugins": [
+		{
+			"Name": "VisualStudioTools",
+			"Enabled": true,
+		}
+	]
+}
+```
+
 ## Manually invoking the plugin
 
 The plugin is intended to be used by Visual Studio, so it does not add any UI, commands, or logs to the Unreal Editor. 
@@ -64,6 +81,10 @@ For more information about the command line parameters of the commandlet, run it
 
 > For UE4.x, the executable is named `UE4Editor-cmd.exe`, under a similar path.
 
+## Troubleshooting
+
+If there are errors in VS while running the blueprint scan, you can try some of the options in [this page](Docs/troubleshooting.md). We are updating that guide based on feedback from customers, so if you have any suggestions, you can follow the steps described in the [support](./SUPPORT.md) page.
+
 ## Contributing
 
 This project welcomes contributions and suggestions.  Most contributions require you to agree to a
@@ -80,7 +101,7 @@ contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additio
 
 ### Code Style Guide
 
-The code in the repo follows the existing conventions for Unreal Engine code described in this [page](https://docs.unrealengine.com/5.1/en-US/epic-cplusplus-coding-standard-for-unreal-engine/).
+The code in the repo follows the existing code conventions described in the Unreal Engine's [Code Standard document](https://docs.unrealengine.com/5.1/en-US/epic-cplusplus-coding-standard-for-unreal-engine/).
 
 ## Trademarks
 

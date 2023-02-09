@@ -13,12 +13,12 @@ It can be installed in the Engine or Game project sources and is automatically i
 
 ## Building and installing
 
-> Have an engine installed with the Epic Game Launcher and just want to use the plugin? You can skip the steps bellow and install from the Epic Marketplace using this link: https://aka.ms/vsueplugin.
+> Have an engine installed with the Epic Game Launcher and just want to use the plugin? You can skip the steps bellow and install from the Epic Marketplace using this link: <https://aka.ms/vsueplugin>.
 
 The simplest way to use the plugin is to clone this repo under the `Plugins` folder of your game project or the engine source.
 If you have multiple projects in the same Visual Studio solution, it's recommended to use install the plugin at the engine level, and share the binaries across the projects.
 
-1. Clone the repo under the project plugin folder. 
+1. Clone the repo under the project plugin folder.
 
 ```powershell
 cd <Project or Engine root folder>/Plugins
@@ -38,7 +38,7 @@ If you want to keep the plugin repo outside of the engine/project sources (e.g.,
 
 ## Optional: Enabling the plugin
 
-The plugin descriptor comes with `"EnabledByDefault = true"` set, so it should work without having to enable it for every game project. 
+The plugin descriptor comes with `"EnabledByDefault = true"` set, so it should work without having to enable it for every game project.
 If that does not work (e.g. UE is not building the plugin when building the project), you can enabe the plugin explicitly with one of the following options.
 
 1. Using the plugin manager in the Unreal Editor and selecting `VisualStudioTools`.
@@ -48,25 +48,25 @@ In both options the end result should be a new entry in the `Plugins` array in t
 
 ```JSON
 {
-	"FileVersion": 3,
-	"Category": "...",
-	"Description": "...",
-	"Modules": ["..."],
-	"Plugins": [
-		{
-			"Name": "VisualStudioTools",
-			"Enabled": true,
-		}
-	]
+ "FileVersion": 3,
+ "Category": "...",
+ "Description": "...",
+ "Modules": ["..."],
+ "Plugins": [
+  {
+   "Name": "VisualStudioTools",
+   "Enabled": true,
+  }
+ ]
 }
 ```
 
 ## Manually invoking the plugin
 
-The plugin is intended to be used by Visual Studio, so it does not add any UI, commands, or logs to the Unreal Editor. 
+The plugin is intended to be used by Visual Studio, so it does not add any UI, commands, or logs to the Unreal Editor.
 It still possible to test it's execution, but running the following command:
 
-The command bellow will run the plugin for the specified project and save the Unreal Engine blueprints information in the output file. 
+The command bellow will run the plugin for the specified project and save the Unreal Engine blueprints information in the output file.
 The optional params help to run the command faster.
 
 ```powershell

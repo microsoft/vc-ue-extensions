@@ -46,11 +46,11 @@ Blueprints Integration in Visual Studio
 
 ## Reporting issues
 
-In case you hit any issues using the tool, we have collected some common troubleshooting steps in our [GitHub repository](https://github.com/microsoft/vc-ue-extensions/blob/main/Docs/troubleshooting.md). We are updating that guide based on feedback from customers.
+For common issues, please refer to our troubleshooting guide in the [GitHub repository](https://github.com/microsoft/vc-ue-extensions/blob/main/Docs/troubleshooting.md). We will periodically update the guide to provide solutions for common issues.
 
-You can report issues, provide feedback and request features using one of the following options:
+To report issues, provide feedback, and request features, please use one of the following options:
 
-- Using the following Visual Studio Developer Community links: [Report a Problem](https://aka.ms/feedback/cpp/unrealengine/report) and [Suggest a Feature](https://aka.ms/feedback/cpp/unrealengine/suggest).
-  - This is our **prefered mechanism**. It routes the feedback directly to our team, where we can request more information if needed, and allows the community to track the status of existent feedback.
+- Through Visual Studio Developer Community: [Report a Problem](https://aka.ms/feedback/cpp/unrealengine/report) and [Suggest a Feature](https://aka.ms/feedback/cpp/unrealengine/suggest).
+  - This is our **preferred mechanism**. Developer Community will route the feedback directly to our team, where we can request more information and prioritize critical bugs. It will also allow the greater community to track the status of existing feedback.
 - In Visual Studio, via the "Help > Send Feedback" menu.
 - Through the Questions section of the plugin's page in the Unreal Engine Marketplace.

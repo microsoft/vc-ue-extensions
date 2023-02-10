@@ -20,10 +20,10 @@ If you have multiple projects in the same Visual Studio solution, it's recommend
 
 1. Clone the repo under the project plugin folder.
 
-```powershell
-cd <Project or Engine root folder>/Plugins
-git clone <repo url>
-```
+   ```powershell
+   cd <Project or Engine root folder>/Plugins
+   git clone <repo url>
+   ```
 
 2. Optional: Regenerate the Solution for your game project, so the plugin source will be visible in Visual Studio.
 3. Rebuild the game project, which will build the plugin.
@@ -83,7 +83,9 @@ For more information about the command line parameters of the commandlet, run it
 
 ## Troubleshooting
 
-If there are errors in VS while running the blueprint scan, you can try some of the options in [this page](Docs/Troubleshooting.md). We are updating that guide based on feedback from customers, so if you have any suggestions, you can follow the steps described in the [support](SUPPORT.md) page.
+For common issues, please refer to our [Troubleshooting](https://github.com/microsoft/vc-ue-extensions/blob/main/Docs/troubleshooting.md) guide in the repository. We will periodically update the guide to provide solutions for common issues.
+
+To report issues, provide feedback, and request features, please use one of the following options: [Report a Problem](https://aka.ms/feedback/cpp/unrealengine/report) and [Suggest a Feature](https://aka.ms/feedback/cpp/unrealengine/suggest).
 
 ## Contributing
 

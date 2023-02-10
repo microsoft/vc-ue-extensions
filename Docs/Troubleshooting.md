@@ -12,7 +12,7 @@ The integration works by Visual Studio being able to invoke the VisualStudioTool
 
 ## Code Lens are not visible
 
-### Verify the required VS component is installed. 
+### Verify the required VS component is installed
 
 In recent versions of UE, the generated solution comes with a `.vsconfig` file, which allows right-clicking on the Solution in VS and selecting "Install Missing Feature(s)". The component is part of the "Game Development with C++" workload.
 
@@ -21,6 +21,14 @@ You can also see this [help page](https://learn.microsoft.com/en-us/visualstudio
 ### Check if the opened documents have any class decorated with the Unreal macros
 
 For real world projects, scanning the blueprints information might take several seconds and be expensive in terms of machine resources. Visual Studio will only start the operation when the Code Lens are rendered. That means it will wait until a file from the game project with the Unreal macros is opened in the editor.
+
+### Check if a `cpp.hint` file is redefining the relevant Unreal macros
+
+Some projects might have a cpp.hint file that includes the `UCLASS`, `UPROPERTY`, `UFUNCTION` macros. That might supress the new logic in Visual Studio that uses the macros to display the Code Lens hints.
+
+If that is the case, you can remove those macros from the hint file, save it and try reloading the project.
+
+Note that other macros in the hint file can be left as-is and do not affect the Code Lens hints.
 
 ## Errors showing up in the Output Window and/or Task Center notification
 

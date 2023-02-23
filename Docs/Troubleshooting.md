@@ -1,6 +1,6 @@
-# Throbleshooting guide
+# Troubleshooting guide
 
-Below are some some errors that might happen in the integration with the Unreal Engine and potential ways to mitigate them.
+This document describes some of the errors that might happen in the integration with the Unreal Engine and potential ways to mitigate them.
 
 The integration works by Visual Studio being able to invoke the VisualStudioTools plugin using the Unreal Editor executable in commandlet mode. That means the following must be true:
 
@@ -24,7 +24,7 @@ For real world projects, scanning the blueprints information might take several 
 
 ### Check if a `cpp.hint` file is redefining the relevant Unreal macros
 
-Some projects might have a cpp.hint file that includes the `UCLASS`, `UPROPERTY`, `UFUNCTION` macros. That might supress the new logic in Visual Studio that uses the macros to display the Code Lens hints.
+Some projects might have a cpp.hint file that includes the `UCLASS`, `UPROPERTY`, `UFUNCTION` macros. That might suppress the new logic in Visual Studio that uses the macros to display the Code Lens hints.
 
 If that is the case, you can remove those macros from the hint file, save it and try reloading the project.
 
@@ -42,7 +42,7 @@ Possible causes are the plugin not being installed correctly or installed but no
 
 ### Message "Command finished with exit code 1" without other errors
 
-Either the game project or the plugin DLL is not yet built. Rebuilding the project should ensure are available. Then manually rescan the game project using the `Project > Rescan UE Blueprints` menu.
+Either the game project or the plugin DLL is not yet built. Rebuilding the project should ensure they are available. Then manually rescan the game project using the `Project > Rescan UE Blueprints` menu.
 
 ### Task Center error: "Your task failed with the message: Could not find a part of the path...'
 

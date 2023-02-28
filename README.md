@@ -83,7 +83,7 @@ For more information about the command line parameters of the commandlet, run it
 
 ## Troubleshooting
 
-For common issues, please refer to our [Troubleshooting](https://github.com/microsoft/vc-ue-extensions/blob/main/Docs/troubleshooting.md) guide in the repository. We will periodically update the guide to provide solutions for common issues.
+For common issues, please refer to our [Troubleshooting](https://github.com/microsoft/vc-ue-extensions/blob/main/Docs/Troubleshooting.md) guide in the repository. We will periodically update the guide to provide solutions for common issues.
 
 To report issues, provide feedback, and request features, please use one of the following options: [Report a Problem](https://aka.ms/feedback/cpp/unrealengine/report) and [Suggest a Feature](https://aka.ms/feedback/cpp/unrealengine/suggest).
 

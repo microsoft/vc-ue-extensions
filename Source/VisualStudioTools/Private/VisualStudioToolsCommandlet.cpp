@@ -114,6 +114,11 @@ struct AssetIndex
 
 	void ProcessBlueprint(const UBlueprintGeneratedClass* BPGC)
 	{
+		if(BPGC == nullptr)
+		{
+			return;	
+		}
+		
 		int32 BlueprintIndex = Blueprints.Num();
 
 		bool hasAnyParent = FindBlueprintNativeParents(BPGC, [&](UClass* Parent) {
@@ -534,7 +539,7 @@ int32 UVisualStudioToolsCommandlet::Main(const FString& Params)
 	using namespace VSTools;
 
 	FString* Filter = ParamVals.Find(FilterSwitch);
-	bool bFullScan = Switches.Contains(FilterSwitch);
+	const bool bFullScan = Switches.Contains(FullSwitch);
 
 	if (Filter != nullptr && bFullScan)
 	{

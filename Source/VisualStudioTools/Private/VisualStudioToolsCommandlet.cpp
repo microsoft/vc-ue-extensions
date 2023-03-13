@@ -417,7 +417,20 @@ static void ProcessAssets(
 			continue;
 		}
 
-		Index.ProcessBlueprint(Cast<UBlueprintGeneratedClass>(Handle->GetLoadedAsset()));
+		if (auto BPGC = Cast<UBlueprintGeneratedClass>(Handle->GetLoadedAsset()))
+		{
+			Index.ProcessBlueprint(BPGC);
+		}
+		else
+		{
+			if (!GenClassPath.ToString().Contains(TargetAssets[i].ObjectPath.ToString()))
+			{
+				UE_LOG(LogVisualStudioTools, Warning,
+					TEXT("blueprint's ObjectPath is not compatible with GenClassPath, consider re-save it to avoid future issues: \n ObjectPath is: %s \n while GenClassPath is: %s"),
+					*TargetAssets[i].ObjectPath.ToString(),
+					*GenClassPath.ToString());
+			}
+		}
 	}
 }
 

@@ -1,6 +1,6 @@
 # Unreal Engine plugin for Visual Studio
 
-This project involves an Unreal Editor plugin that works in conjunction with Visual Studio to display information about Blueprints assets in C++ code. 
+This project contains an Unreal Editor plugin that works in conjunction with Visual Studio to display information about Blueprints assets in C++ code. 
 
 The plugin can be installed in either the Engine or Game project sources, and it is automatically activated when an Unreal Engine project is opened in Visual Studio.
 
@@ -24,7 +24,7 @@ The most straightforward way to use the plugin is to clone the repo under the `P
 
    ```powershell
    cd <Project or Engine root folder>/Plugins
-   git clone <repo url>
+   git clone https://github.com/microsoft/vc-ue-extensions.git
    ```
 
 2. Optional: Regenerate the Solution for your game project so that the plugin source will be visible in Visual Studio.
@@ -85,15 +85,15 @@ For more information on the specific command line parameters, you can run the fo
 
 If you encounter any issues when setting up Visual Studio in conjunction with the Unreal Editor plugin, please refer to the [Troubleshooting](https://github.com/microsoft/vc-ue-extensions/blob/main/Docs/Troubleshooting.md) guide in the repository. This guide provides solutions for common issues and is periodically updated to ensure that the latest solutions are available.
 
-To report any issues, provide feedback, or request new features, please use the following options: [Report a Problem](https://aka.ms/feedback/cpp/unrealengine/report) and [Suggest a Feature](https://aka.ms/feedback/cpp/unrealengine/suggest). These options will allow you to submit your issue or feedback directly to our team and help us improve the plugin moving forward.
+To report new issues, provide feedback, or request new features, please use the following options: [Report a Problem](https://aka.ms/feedback/cpp/unrealengine/report) and [Suggest a Feature](https://aka.ms/feedback/cpp/unrealengine/suggest). These options will allow you to submit your issue or feedback directly to our team and help us improve the plugin moving forward.
 
 ## Contributing
 
-This project welcomes contributions and suggestions from the community. The majority of contributions will require that you agree to a Contributor License Agreement (CLA) stating that you have the right to, and actually do, give us permission to use your contribution. To learn more about the CLA, please visit <https://cla.opensource.microsoft.com>.
+This project welcomes contributions and suggestions. Most contributions require you to agree to a Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us the rights to use your contribution. For details, visit https://cla.opensource.microsoft.com.
 
-When submitting a pull request, please follow the instructions provided by the CLA bot. The bot will determine whether you need to agree to the CLA and decorate the PR appropriately (e.g., status check, comment). Keep in mind that this process will only need to be completed once across all repos that use our CLA.
+When you submit a pull request, a CLA bot will automatically determine whether you need to provide a CLA and decorate the PR appropriately (e.g., status check, comment). Simply follow the instructions provided by the bot. You will only need to do this once across all repos using our CLA.
 
-This project follows the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/). For more information and help in case of any concerns, please visit the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or reach out to [opencode@microsoft.com](mailto:opencode@microsoft.com).
+This project has adopted the Microsoft Open Source Code of Conduct. For more information see the Code of Conduct FAQ or contact opencode@microsoft.com with any additional questions or comments.
 
 ### Code Style Guide
 

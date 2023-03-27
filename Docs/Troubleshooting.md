@@ -30,6 +30,10 @@ If that is the case, you can remove those macros from the hint file, save it and
 
 Note that other macros in the hint file can be left as-is and do not affect the Code Lens hints.
 
+### Ensure the C++ Database is enabled
+
+In Tools > Options > Text Editor > C/C++ > Advanced > Browsing/Navigation, the setting "Disable Database" should be set to "False". This is the default value of this setting.
+
 ## Errors showing up in the Output Window and/or Task Center notification
 
 ### Message "LogInit: Error: VisualStudioToolsCommandlet looked like a commandlet, but we could not find the class."

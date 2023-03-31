@@ -186,6 +186,11 @@ using JsonWriter = TJsonWriter<TCHAR, TCondensedJsonPrintPolicy<TCHAR>>;
 
 static bool ShouldSerializePropertyValue(FProperty* Property)
 {
+	if (Property->ArrayDim > 1) // Skip properties that are not scalars
+	{
+		return false;
+	}
+
 	if (FEnumProperty* EnumProperty = CastField<FEnumProperty>(Property))
 	{
 		return true;

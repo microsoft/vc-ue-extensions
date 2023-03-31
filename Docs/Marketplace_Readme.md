@@ -46,7 +46,7 @@ Blueprints Integration in Visual Studio
 
 ## Reporting issues
 
-For common issues, please refer to our troubleshooting guide in the [GitHub repository](https://github.com/microsoft/vc-ue-extensions/blob/main/Docs/troubleshooting.md). We will periodically update the guide to provide solutions for common issues.
+For common issues, please refer to our troubleshooting guide in the [GitHub repository](https://github.com/microsoft/vc-ue-extensions/blob/main/Docs/Troubleshooting.md). We will periodically update the guide to provide solutions for common issues.
 
 To report issues, provide feedback, and request features, please use one of the following options:
 

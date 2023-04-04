@@ -423,11 +423,18 @@ static void ProcessAssets(
 		}
 		else
 		{
-			if (!GenClassPath.ToString().Contains(TargetAssets[i].ObjectPath.ToString()))
+			auto ObjectPathString =
+		#if ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 1 // UE5.1 deprecated 'FAssetData::ObjectPath' in favor of 'FAssetData::GetObjectPathString()'
+			TargetAssets[i].GetObjectPathString();
+		#else
+			TargetAssets[i].ObjectPath.ToString();
+		#endif // ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 1
+
+			if (!GenClassPath.ToString().Contains(ObjectPathString))
 			{
 				UE_LOG(LogVisualStudioTools, Warning,
 					TEXT("blueprint's ObjectPath is not compatible with GenClassPath, consider re-save it to avoid future issues: \n ObjectPath is: %s \n while GenClassPath is: %s"),
-					*TargetAssets[i].ObjectPath.ToString(),
+					*ObjectPathString,	
 					*GenClassPath.ToString());
 			}
 		}

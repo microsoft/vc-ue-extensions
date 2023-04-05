@@ -28,3 +28,18 @@ steps:
     TreatSignatureUpdateFailureAs: 'Warning'
     SignatureFreshness: 'UpToDate'
     TreatStaleSignatureAs: 'Error'
+
+- task: CredScan@3
+  inputs:
+    scanFolder: '$(Build.SourcesDirectory)'
+
+- task: TSAUpload@1
+  inputs:
+    tsaVersion: TsaV2
+    codebase: NewOrUpdate
+    codeBaseName: 'vc-ue-extensions'
+    notificationAlias: 'cpp-apogee@microsoft.com'
+    instanceUrlForTsaV2: DEVDIV
+    projectNameDEVDIV: DevDiv
+    areaPath: 'DevDiv\Cpp Developer Experience\Apogee\Unreal Engine integrations'
+    iterationPath: DevDiv

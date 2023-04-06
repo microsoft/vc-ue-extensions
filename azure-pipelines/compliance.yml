@@ -28,3 +28,7 @@ steps:
     TreatSignatureUpdateFailureAs: 'Warning'
     SignatureFreshness: 'UpToDate'
     TreatStaleSignatureAs: 'Error'
+
+- task: CredScan@3
+  inputs:
+    scanFolder: '$(Build.SourcesDirectory)'

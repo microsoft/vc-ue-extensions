@@ -422,7 +422,27 @@ static void ProcessAssets(
 			continue;
 		}
 
-		Index.ProcessBlueprint(Cast<UBlueprintGeneratedClass>(Handle->GetLoadedAsset()));
+		if (auto BPGC = Cast<UBlueprintGeneratedClass>(Handle->GetLoadedAsset()))
+		{
+			Index.ProcessBlueprint(BPGC);
+		}
+		else
+		{
+			auto ObjectPathString =
+		#if ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 1 // UE5.1 deprecated 'FAssetData::ObjectPath' in favor of 'FAssetData::GetObjectPathString()'
+			TargetAssets[i].GetObjectPathString();
+		#else
+			TargetAssets[i].ObjectPath.ToString();
+		#endif // ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 1
+
+			if (!GenClassPath.ToString().Contains(ObjectPathString))
+			{
+				UE_LOG(LogVisualStudioTools, Warning,
+					TEXT("blueprint's ObjectPath is not compatible with GenClassPath, consider re-save it to avoid future issues: \n ObjectPath is: %s \n while GenClassPath is: %s"),
+					*ObjectPathString,	
+					*GenClassPath.ToString());
+			}
+		}
 	}
 }
 

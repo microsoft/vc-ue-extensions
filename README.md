@@ -1,50 +1,51 @@
-# Unreal Engine extensions for Visual Studio
+# Unreal Engine plugin for Visual Studio
 
-This project contains an Unreal Editor plug-in used by Visual Studio to display information about Blueprints assets in the C++ code.
+This project contains an Unreal Editor plugin that works in conjunction with Visual Studio to display information about Blueprints assets in C++ code. 
 
-It can be installed in the Engine or Game project sources and is automatically invoked by VS when opening an Unreal Engine C++ project.
+The plugin can be installed in either the Engine or Game project sources, and it is automatically activated when an Unreal Engine project is opened in Visual Studio.
 
-## Prerequisites
+## Requirements
 
-1. Visual Studio 2022, with the "IDE features for Unreal Engine" component installed in the Gaming Workload.
+Before you begin, please make sure you have the following software and tools set up:
+
+1. Visual Studio 2022 has the "IDE features for Unreal Engine" component installed.
+   1. The component can be found in the "Game development with C++" workload or as an individual component.
 2. Unreal Engine, either installed or built from source.
-   1. See the following link for instructions on how to install or build the Engine: [Installing Unreal Engine](https://docs.unrealengine.com/5.0/en-US/installing-unreal-engine).
-   1. We have tested the source and instructions below using Unreal Engine versions 4.27, 5.0 and 5.1.
+   1. To learn how to install or build Unreal Engine, please refer to the following guide: [Installing Unreal Engine](https://docs.unrealengine.com/5.0/en-US/installing-unreal-engine).
+   1. The source code and instructions have been tested on Unreal Engine versions 4.27, 5.0 and 5.1.
 
-## Building and installing
+## Building and Installing the Plugin
 
-> Have an engine installed with the Epic Game Launcher and just want to use the plugin? You can skip the steps bellow and install from the Epic Marketplace using this link: <https://aka.ms/vsueplugin>.
+> If you have Unreal Engine installed and set up through the Epic Games Launcher, and you only want to use the plugin, you can skip the steps below and install it directly from the [Unreal Engine Marketplace](https://aka.ms/vsueplugin).
 
-The simplest way to use the plugin is to clone this repo under the `Plugins` folder of your game project or the engine source.
-If you have multiple projects in the same Visual Studio solution, it's recommended to use install the plugin at the engine level, and share the binaries across the projects.
+The most straightforward way to use the plugin is to clone the repo under the `Plugins` folder of your game project or engine source. If you have multiple projects in the same Visual Studio solution, it is recommended to install the plugin at the engine level and share the binaries across the projects.
 
-1. Clone the repo under the project plugin folder.
+1. Clone the repo under the project plugin folder by using the following commands:
 
    ```powershell
    cd <Project or Engine root folder>/Plugins
-   git clone <repo url>
+   git clone https://github.com/microsoft/vc-ue-extensions.git
    ```
 
-2. Optional: Regenerate the Solution for your game project, so the plugin source will be visible in Visual Studio.
-3. Rebuild the game project, which will build the plugin.
+2. Optional: Regenerate the Solution for your game project so that the plugin source will be visible in Visual Studio.
+3. Rebuild the game project, which will also build the plugin.
 
-After that, Visual Studio should detect the plugin when opening a solution or project and start processing the blueprints in the game.
+After completing these steps, Visual Studio should automatically recognize the plugin when you open a solution or project, and it will start processing Blueprints in your game.
 
-You can also force VS to invoke the commandlet in the plugin using the option `Rescan UE Blueprints for <Game Project Name>` in the `Project` menu.
+You can also use the option `Rescan UE Blueprints for <Game Project Name>` in the `Project` menu to manually force Visual Studio to invoke the the plugin.
 
 ### Cloning outside of engine or project sources
 
-If you want to keep the plugin repo outside of the engine/project sources (e.g., share it for multiple engines) check [these instructions](Scripts/README.md) for some tools that help building and installing the plugin in those cases.
+If you prefer to have the plugin's repository located separately from the engine or project sources (for example, if you want to share it between multiple engines), you can follow the instructions provided in the file [Scripts/README.md](Scripts/README.md) to learn how to build and install the plugin in such a scenario.
 
-## Optional: Enabling the plugin
+## Enabling the Plugin (Optional)
 
-The plugin descriptor comes with `"EnabledByDefault = true"` set, so it should work without having to enable it for every game project.
-If that does not work (e.g. UE is not building the plugin when building the project), you can enabe the plugin explicitly with one of the following options.
+By default, the plugin descriptor is already set with `"EnabledByDefault = true"`, so it should function automatically without any additional steps. However, if you encounter difficulties with Unreal Engine building the plugin (e.g., UE fails to build the plugin when building the project), you can enable the plugin explicitly by using one of the following methods:
 
-1. Using the plugin manager in the Unreal Editor and selecting `VisualStudioTools`.
-2. Manually editing the `.uproject` descriptor for the game project and add an entry for the plugin.
+1. Navigate to the plugin manager in the Unreal Editor and select `VisualStudioTools`.
+2. Manually edit the game project's `.uproject` descriptor file by adding an entry for the plugin.
 
-In both options the end result should be a new entry in the `Plugins` array in the JSON file.
+In either case, the end result should be a new entry in the `Plugins` array in the JSON file, as shown below:
 
 ```JSON
 {
@@ -60,32 +61,31 @@ In both options the end result should be a new entry in the `Plugins` array in t
  ]
 }
 ```
+>Note: To ensure proper activation of the plugin, make sure the correct plugin is selected or the desired changes are made in the `.uproject` file.
 
 ## Manually invoking the plugin
 
-The plugin is intended to be used by Visual Studio, so it does not add any UI, commands, or logs to the Unreal Editor.
-It still possible to test it's execution, but running the following command:
-
-The command bellow will run the plugin for the specified project and save the Unreal Engine blueprints information in the output file.
-The optional params help to run the command faster.
+The plugin is designed to be used with Visual Studio, and as such, it does not provide any user interfaces, commands, or logs within the Unreal Editor. However, it is still possible to test the plugin's execution by running the **sample** command below: 
 
 ```powershell
-& "C:\Program Files\Epic Games\UE_5.0\Engine\Binaries\Win64\UnrealEditor-Cmd.exe" "$Env:UserProfile\Unreal Projects\EmptyProject\EmptyProject.uproject" -run=VisualStudioTools -output "$Env:Temp\vs-ue-tools.json" [-unattended -noshadercompile -nosound -nullrhi -nocpuprofilertrace -nocrashreports -nosplash]
+& "<AbsolutePathToEngine>\Engine\Binaries\Win64\UnrealEditor-Cmd.exe" "$Env:UserProfile\Unreal Projects\EmptyProject\EmptyProject.uproject" -run=VisualStudioTools -output "$Env:Temp\vs-ue-tools.json" [-unattended -noshadercompile -nosound -nullrhi -nocpuprofilertrace -nocrashreports -nosplash]
 ```
 
-For more information about the command line parameters of the commandlet, run it with the `-help` switch.
+This command will run the plugin for the specified project and save Unreal Engine Blueprint information in the output file. Optional parameters are included to run the command faster.
+
+For more information on the specific command line parameters, you can run the following command in the powershell prompt with `-help`:
 
 ```powershell
 & "<Editor-Cmd.exe>" "<path_to_uproject>" -run=VisualStudioTools -help [-unattended -noshadercompile -nosound -nullrhi -nocpuprofilertrace -nocrashreports -nosplash]
 ```
 
-> For UE4.x, the executable is named `UE4Editor-cmd.exe`, under a similar path.
+>Note: The executable name is `UE4Editor-cmd.exe` for UE4.x, located under a similar path.
 
 ## Troubleshooting
 
-For common issues, please refer to our [Troubleshooting](https://github.com/microsoft/vc-ue-extensions/blob/main/Docs/Troubleshooting.md) guide in the repository. We will periodically update the guide to provide solutions for common issues.
+If you encounter any issues when setting up Visual Studio in conjunction with the Unreal Editor plugin, please refer to the [Troubleshooting](https://github.com/microsoft/vc-ue-extensions/blob/main/Docs/Troubleshooting.md) guide in the repository. This guide provides solutions for common issues and is periodically updated to ensure that the latest solutions are available.
 
-To report issues, provide feedback, and request features, please use one of the following options: [Report a Problem](https://aka.ms/feedback/cpp/unrealengine/report) and [Suggest a Feature](https://aka.ms/feedback/cpp/unrealengine/suggest).
+To report new issues, provide feedback, or request new features, please use the following options: [Report a Problem](https://aka.ms/feedback/cpp/unrealengine/report) and [Suggest a Feature](https://aka.ms/feedback/cpp/unrealengine/suggest). These options will allow you to submit your issue or feedback directly to our team and help us improve the plugin moving forward.
 
 ## Contributing
 

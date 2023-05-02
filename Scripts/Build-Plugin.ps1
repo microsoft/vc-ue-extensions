@@ -64,7 +64,7 @@ param(
     [string]
     # The temp folder to save the binaries of the plugin package.
     # Will be moved to the target project or engine, unless `-CopyToTarget No` is passed.
-    $PackagePath="bin"
+    $PackagePath=""
 )
 
 function Get-UnrealEngine
@@ -85,6 +85,11 @@ $EnginePath = switch ($PSCmdlet.ParameterSetName) {
     'InstalledVersion' { Get-UnrealEngine $InstalledVersion }
 }
 
+if ($PackagePath -eq "")
+{
+    $PackagePath = [IO.Path]::GetFullPath("bin", $pwd)
+}
+
 $plugin = get-item $PluginFile
 $buildPath = [IO.Path]::Combine($PackagePath, $plugin.BaseName)
 $uat = Join-Path -Path $EnginePath -ChildPath 'Build\BatchFiles\RunUAT.bat'
@@ -93,8 +98,8 @@ $uat = Join-Path -Path $EnginePath -ChildPath 'Build\BatchFiles\RunUAT.bat'
 & $uat BuildPlugin -Plugin="$plugin" -TargetPlatforms=Win64 -Package="$buildPath"
 
 $pluginsPath = switch ($Project -eq "") {
-    $True { Join-Path $EnginePath -ChildPath 'Plugins' }
-    $False { Join-Path -Path (Get-ChildItem -Path $Project -File).DirectoryName -ChildPath "Plugins" }
+    $True { Join-Path $EnginePath -ChildPath 'Plugins' $plugin.BaseName }
+    $False { Join-Path -Path (Get-ChildItem -Path $Project -File).DirectoryName -ChildPath "Plugins" $plugin.BaseName}
 }
 
 switch ($CopyToTarget) {
@@ -103,10 +108,10 @@ switch ($CopyToTarget) {
             throw "Destination plugin folder already exisits. Use `-CopyToTarget Force` if you intend to overwrite it."
         }
 
-        Move-Item -Path $buildPath -Destination $pluginsPath
+        Move-Item -Path $buildPath -Destination $pluginsPath -Verbose
     }
     'Force' {
-        Move-Item -Path $buildPath -Destination $pluginsPath -Force
+        Move-Item -Path $buildPath -Destination $pluginsPath -Force -Verbose
     }
     'No' {
         # noop

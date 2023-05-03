@@ -11,7 +11,6 @@
 #include "Engine/StreamableManager.h"
 #include "HAL/FileManager.h"
 #include "JsonObjectConverter.h"
-#include "Launch/Resources/Version.h"
 #include "Misc/Paths.h"
 #include "Misc/ScopeExit.h"
 #include "Policies/CondensedJsonPrintPolicy.h"
@@ -24,19 +23,39 @@ namespace VSTools
 static const FName NAME_Category = TEXT("Category");
 static const FName ModuleNameFName = TEXT("ModuleName");
 
-// Wrapper for conditional compilation of deprecated API usage
-// Might be overridden by the `Build.cs` rules.
+namespace AssetHelpers
+{
+/*
+* These helpers handle the usage of some APIs that were deprecated in 5.1 
+* but the replacements are not available in older versions.
+* Might be overridden by the `Build.cs` rules
+*/
+#if FILTER_ASSETS_BY_CLASS_PATH
+
 static void SetBlueprintClassFilter(FARFilter& InOutFilter)
 {
 	// UE5.1 deprecated the API to filter using class names
-#if !defined(FILTER_ASSETS_BY_CLASS_PATH)
-#define FILTER_ASSETS_BY_CLASS_PATH ((ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 1) || ENGINE_MAJOR_VERSION > 5)
-#endif
-
-#if FILTER_ASSETS_BY_CLASS_PATH
 	InOutFilter.ClassPaths.Add(UBlueprintCore::StaticClass()->GetClassPathName());
-#else
+}
+
+static FString GetObjectPathString(const FAssetData& InAssetData)
+{
+	// UE5.1 deprecated 'FAssetData::ObjectPath' in favor of 'FAssetData::GetObjectPathString()'
+	return InAssetData.GetObjectPathString();
+}
+
+#else // FILTER_ASSETS_BY_CLASS_PATH
+
+static void SetBlueprintClassFilter(FARFilter& InOutFilter)
+{
 	InOutFilter.ClassNames.Add(UBlueprintCore::StaticClass()->GetFName());
+}
+
+static FString GetObjectPathString(const FAssetData& InAssetData)
+{
+	return InAssetData.ObjectPath.ToString();
+}
+
 #endif // FILTER_ASSETS_BY_CLASS_PATH
 }
 
@@ -114,39 +133,39 @@ struct AssetIndex
 
 	void ProcessBlueprint(const UBlueprintGeneratedClass* BPGC)
 	{
-		if(BPGC == nullptr)
+		if (BPGC == nullptr)
 		{
-			return;	
+			return;
 		}
-		
+
 		int32 BlueprintIndex = Blueprints.Num();
 
 		bool hasAnyParent = FindBlueprintNativeParents(BPGC, [&](UClass* Parent) {
 			FString ParentName = Parent->GetFName().ToString();
-		if (!Classes.Contains(ParentName))
-		{
-			Classes.Add(ParentName).Class = Parent;
-		}
-
-		ClassEntry& entry = Classes[ParentName];
-
-		entry.Blueprints.Add(BlueprintIndex);
-
-		UObject* GeneratedClassCDO = BPGC->ClassDefaultObject;
-		UObject* SuperClassCDO = Parent->GetDefaultObject(false);
-		TArray<FProperty*> ChangedProperties = GetChangedPropertiesList(Parent, (uint8*)GeneratedClassCDO, (uint8*)SuperClassCDO);
-
-		for (FProperty* Property : ChangedProperties)
-		{
-			FString PropertyName = Property->GetFName().ToString();
-			if (!entry.Properties.Contains(PropertyName))
+			if (!Classes.Contains(ParentName))
 			{
-				entry.Properties.Add(PropertyName).Property = Property;
+				Classes.Add(ParentName).Class = Parent;
 			}
 
-			PropertyEntry& propEntry = entry.Properties[PropertyName];
-			propEntry.Blueprints.Add(BlueprintIndex);
-		}
+			ClassEntry& entry = Classes[ParentName];
+
+			entry.Blueprints.Add(BlueprintIndex);
+
+			UObject* GeneratedClassCDO = BPGC->ClassDefaultObject;
+			UObject* SuperClassCDO = Parent->GetDefaultObject(false);
+			TArray<FProperty*> ChangedProperties = GetChangedPropertiesList(Parent, (uint8*)GeneratedClassCDO, (uint8*)SuperClassCDO);
+
+			for (FProperty* Property : ChangedProperties)
+			{
+				FString PropertyName = Property->GetFName().ToString();
+				if (!entry.Properties.Contains(PropertyName))
+				{
+					entry.Properties.Add(PropertyName).Property = Property;
+				}
+
+				PropertyEntry& propEntry = entry.Properties[PropertyName];
+				propEntry.Blueprints.Add(BlueprintIndex);
+			}
 			});
 
 		bool hasAnyFunctions = false;
@@ -413,7 +432,7 @@ static void ProcessAssets(
 	{
 		FSoftClassPath GenClassPath = TargetAssets[i].GetTagValueRef<FString>(FBlueprintTags::GeneratedClassPath);
 
-		UE_LOG(LogVisualStudioTools, Display, TEXT("Processing blueprints [%d/%d]: %s"), i+1, TargetAssets.Num(), *GenClassPath.ToString());
+		UE_LOG(LogVisualStudioTools, Display, TEXT("Processing blueprints [%d/%d]: %s"), i + 1, TargetAssets.Num(), *GenClassPath.ToString());
 
 		TSharedPtr<FStreamableHandle> Handle = AssetLoader.RequestSyncLoad(GenClassPath);
 		ON_SCOPE_EXIT
@@ -433,18 +452,12 @@ static void ProcessAssets(
 		}
 		else
 		{
-			auto ObjectPathString =
-		#if ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 1 // UE5.1 deprecated 'FAssetData::ObjectPath' in favor of 'FAssetData::GetObjectPathString()'
-			TargetAssets[i].GetObjectPathString();
-		#else
-			TargetAssets[i].ObjectPath.ToString();
-		#endif // ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 1
-
+			FString ObjectPathString = AssetHelpers::GetObjectPathString(TargetAssets[i]);
 			if (!GenClassPath.ToString().Contains(ObjectPathString))
 			{
 				UE_LOG(LogVisualStudioTools, Warning,
 					TEXT("blueprint's ObjectPath is not compatible with GenClassPath, consider re-save it to avoid future issues: \n ObjectPath is: %s \n while GenClassPath is: %s"),
-					*ObjectPathString,	
+					*ObjectPathString,
 					*GenClassPath.ToString());
 			}
 		}
@@ -458,7 +471,7 @@ static void RunAssetScan(
 	FARFilter Filter;
 	Filter.bRecursivePaths = true;
 	Filter.bRecursiveClasses = true;
-	SetBlueprintClassFilter(Filter);
+	AssetHelpers::SetBlueprintClassFilter(Filter);
 
 	// Add all base classes to the tag filter for native parent
 	Algo::Transform(FilterBaseClasses, Filter.TagsAndValues, [](const TWeakObjectPtr<UClass>& Class) {
@@ -586,7 +599,7 @@ int32 UVisualStudioToolsCommandlet::Main(const FString& Params)
 			GetNativeClassesByPath(FPaths::ProjectDir(), FilterBaseClasses);
 		}
 	}
-	
+
 	AssetIndex Index;
 	RunAssetScan(Index, FilterBaseClasses);
 	SerializeToIndex(Index, *OutArchive);
@@ -595,4 +608,3 @@ int32 UVisualStudioToolsCommandlet::Main(const FString& Params)
 
 	return 0;
 }
-

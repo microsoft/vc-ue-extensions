@@ -10,7 +10,7 @@
     </PropertyGroup>
     <Target Name="Build">
         <MakeDir Directories="$(PackagePath)" Condition="!Exists('$(PackagePath)')" />
-        <Exec Command="$(PowerShellExe) -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Unrestricted -c &quot;&amp; { &amp; &apos;$(ScriptLocation)&apos; -InstalledVersion $(UnrealVersion) -PluginFile &apos;$(PluginFile)&apos; -CopyToTarget No -PackagePath &apos;$(PackagePath)&apos; } &quot;" />
+        <Exec Command="$(PowerShellExe) -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Unrestricted -c &quot;&amp; { &amp; &apos;$(ScriptLocation)&apos; -InstalledVersion &quot;$(UnrealVersion)&quot; -PluginFile &apos;$(PluginFile)&apos; -CopyToTarget No -PackagePath &apos;$(PackagePath)&apos; } &quot;" />
     </Target>
     <Target Name="Clean" >
         <RemoveDir Directories="$(PackagePath);"/>

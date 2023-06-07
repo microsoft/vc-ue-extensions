@@ -10,7 +10,7 @@ public class VisualStudioTools : ModuleRules
 
         // When debugging the commandlet code, you can uncomment the line below
         // to get proper local variable inspection and less inlined stack frames
-        //OptimizeCode = CodeOptimization.Never;
+        // OptimizeCode = CodeOptimization.Never;
 
         // To support UE5.1+, the code is using the new FTopLevelAssetPath API
 		// with a detection of support via version numbers.
@@ -40,7 +40,8 @@ public class VisualStudioTools : ModuleRules
                 "Engine",
                 "Json",
                 "JsonUtilities",
-                "UnrealEd",
+				"Kismet",
+				"UnrealEd",
             }
         );
     }

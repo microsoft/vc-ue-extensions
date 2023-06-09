@@ -14,7 +14,7 @@
 
 namespace VisualStudioTools
 {
-static FString StripClassPrefix(const FString&& InClassName)
+static FString StripClassPrefix(const FString& InClassName)
 {
 	if (InClassName.IsEmpty())
 	{
@@ -52,23 +52,31 @@ static FString StripClassPrefix(const FString&& InClassName)
 	return InClassName.RightChop(PrefixSize);
 }
 
-TArray<FAssetData> GetMatchingAssetsForSearchQuery(const FString& SearchValue)
+/**
+* Retrieves the asset data matching the given FindInBlueprints query.
+*/
+TArray<FAssetData> SearchForCandidateAssets(const FString& SearchQuery)
 {
+	IAssetRegistry& AssetRegistry = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry")).Get();
+	AssetRegistry.SearchAllAssets(true);
+
 	TArray<FSearchResult> OutItemsFound;
-	FStreamSearch StreamSearch(SearchValue);
+	FStreamSearch StreamSearch(SearchQuery);
 	while (!StreamSearch.IsComplete())
 	{
 		FFindInBlueprintSearchManager::Get().Tick(0.0);
 	}
 
+	// Execute the search and get all the assets in the result.
 	StreamSearch.GetFilteredItems(OutItemsFound);
 
-	IAssetRegistry& AssetRegistry = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry")).Get();
 
 	TArray<FAssetData> OutTargetAssets;
 	Algo::Transform(OutItemsFound, OutTargetAssets,
 		[&](const FSearchResult& Item)
 		{
+			// The DisplayText property of the result contains the blueprint's object path
+			// Use that to find the respective asset in the registry
 #if FILTER_ASSETS_BY_CLASS_PATH
 			return AssetRegistry.GetAssetByObjectPath(FSoftObjectPath(*Item->DisplayText.ToString()));
 #else
@@ -79,22 +87,27 @@ TArray<FAssetData> GetMatchingAssetsForSearchQuery(const FString& SearchValue)
 	return OutTargetAssets;
 }
 
+/**
+* Loads each blueprint asset and filters the collection to items which use the 
+* target UFunction in their call graph, matching the native class and function names.
+*/
 TMap<FString, FAssetData> GetConfirmedAssets(
-	const FString& ClassName, const TArray<FAssetData>& InAssets)
+	const FString& FunctionName, const FString& ClassNameWithoutPrefix, const TArray<FAssetData>& InAssets)
 {
 	TMap<FString, FAssetData> OutResults;
 
 	AssetHelpers::ForEachAsset(InAssets,
 		[&](UBlueprintGeneratedClass* BlueprintClassName, const FAssetData AssetData)
 		{
-			auto It = Algo::FindByPredicate(BlueprintClassName->CalledFunctions,
-			[&](const UFunction* Fn)
+			auto MatchingFunction = Algo::FindByPredicate(BlueprintClassName->CalledFunctions,
+				[&](const UFunction* Fn)
 				{
 					return Fn->HasAnyFunctionFlags(EFunctionFlags::FUNC_Native)
-						&& Fn->GetOwnerClass()->GetName() != ClassName;
+						&& Fn->GetName() == FunctionName
+						&& Fn->GetOwnerClass()->GetName() == ClassNameWithoutPrefix;
 				});
 
-			if (It != nullptr)
+			if (MatchingFunction != nullptr)
 			{
 				OutResults.Add(BlueprintClassName->GetName(), AssetData);
 			}
@@ -114,10 +127,6 @@ static void SerializeBlueprintReference(
 		FPackageName::FindPackageFileWithoutExtension(PackageFileName, PackageFile))
 	{
 		PackageFilePath = FPaths::ConvertRelativePathToFull(MoveTemp(PackageFile));
-	}
-	else
-	{
-		PackageFilePath = "[Invalid file path]";
 	}
 
 	Json->WriteObjectStart();
@@ -188,6 +197,7 @@ int32 UVsBlueprintReferencesCommandlet::Run(
 	TMap<FString, FString>& ParamVals,
 	FArchive& OutArchive)
 {
+	using namespace VisualStudioTools;
 	GIsRunning = true; // Required for the blueprint search to work.
 
 	FString* ReferencesSymbol = ParamVals.Find(SymbolParamVal);
@@ -198,22 +208,37 @@ int32 UVsBlueprintReferencesCommandlet::Run(
 		return -1;
 	}
 
-	FString Function;
+	FString FunctionName;
 	FString ClassNameNative;
-	if (!ReferencesSymbol->Split(TEXT("::"), &ClassNameNative, &Function))
+	if (!ReferencesSymbol->Split(TEXT("::"), &ClassNameNative, &FunctionName))
 	{
 		UE_LOG(LogVisualStudioTools, Error, TEXT("Reference parameter should be in the qualified 'NativeClassName::MethodName' format."));
 		PrintHelp();
 		return -1;
 	}
 
-	FString ClassName = VisualStudioTools::StripClassPrefix(std::move(ClassNameNative));
-	FString SearchValue = FString::Printf(TEXT("Nodes(\"Native Name\"=+%s & ClassName=K2Node_CallFunction)"), *Function, *ClassName);
+	// Execute the search in two stages:
+	// 1. Use FindInBlueprints to get all candidate blueprints with calls to functions that match the requested symbol
+	// 2. Confirm the blueprints reference the requested function, by matching the target UFunction in their call graph.
+	// The first step acts as a filter to avoid loading too many blueprints to inspect their call graph.
+	// The second step is required because the FiB data does not always allow for searching with the function
+	// qualified with the owned class name, if the function is static.
+
+	FString ClassNameWithoutPrefix = StripClassPrefix(ClassNameNative);
+	
+	// Create a FiB search query for function nodes where the native name matches the requested symbol
+	FString SearchValue = FString::Printf(TEXT("Nodes(\"Native Name\"=+%s & ClassName=K2Node_CallFunction)"), *FunctionName);
+	
 	UE_LOG(LogVisualStudioTools, Display, TEXT("Blueprint search query: %s"), *SearchValue);
 
-	TArray<FAssetData> TargetAssets = VisualStudioTools::GetMatchingAssetsForSearchQuery(SearchValue);
-	TMap<FString, FAssetData> MatchAssets = VisualStudioTools::GetConfirmedAssets(ClassName, TargetAssets);
-	VisualStudioTools::SerializeResults(MatchAssets, OutArchive, TargetAssets.Num());
+	// Step 1: Execute the Fib search
+	TArray<FAssetData> TargetAssets = SearchForCandidateAssets(SearchValue);
+	
+	// Step 2: Load the assets to confirm they are a match
+	TMap<FString, FAssetData> MatchAssets = GetConfirmedAssets(FunctionName, ClassNameWithoutPrefix, TargetAssets);
+
+	// Finally, write the results back to the output
+	SerializeResults(MatchAssets, OutArchive, TargetAssets.Num());
 
 	UE_LOG(LogVisualStudioTools, Display, TEXT("Found %d blueprints."), MatchAssets.Num());
 	return 0;

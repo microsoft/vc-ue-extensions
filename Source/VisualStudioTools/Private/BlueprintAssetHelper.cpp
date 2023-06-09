@@ -80,6 +80,7 @@ void ForEachAsset(
 
 		if (!Handle.IsValid())
 		{
+			UE_LOG(LogVisualStudioTools, Warning, TEXT("Failed to get a streamable handle for Blueprint. Skipping. GenClassPath: %s"), *GenClassPath.ToString());
 			continue;
 		}
 

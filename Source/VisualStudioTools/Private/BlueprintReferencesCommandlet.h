@@ -6,16 +6,17 @@
 #include "CoreMinimal.h"
 #include "VisualStudioToolsCommandletBase.h"
 
-#include "VisualStudioToolsCommandlet.generated.h"
+#include "BlueprintReferencesCommandlet.generated.h"
 
 UCLASS()
-class UVisualStudioToolsCommandlet
+class UVsBlueprintReferencesCommandlet
 	: public UVisualStudioToolsCommandletBase
 {
 	GENERATED_BODY()
 
 public:
-	UVisualStudioToolsCommandlet();
+	UVsBlueprintReferencesCommandlet();
+
 	int32 Run(
 		TArray<FString>& Tokens,
 		TArray<FString>& Switches,

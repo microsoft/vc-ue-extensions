@@ -4,14 +4,9 @@
 
 #include "Algo/Transform.h"
 #include "AssetRegistry/AssetRegistryModule.h"
-#include "Blueprint/BlueprintSupport.h"
-#include "Engine/BlueprintCore.h"
+#include "BlueprintAssetHelpers.h"
 #include "Engine/BlueprintGeneratedClass.h"
-#include "Engine/Engine.h"
-#include "Engine/StreamableManager.h"
-#include "HAL/FileManager.h"
 #include "JsonObjectConverter.h"
-#include "Misc/Paths.h"
 #include "Misc/ScopeExit.h"
 #include "Policies/CondensedJsonPrintPolicy.h"
 #include "SourceCodeNavigation.h"
@@ -22,42 +17,6 @@ namespace VisualStudioTools
 {
 static const FName CategoryFName = TEXT("Category");
 static const FName ModuleNameFName = TEXT("ModuleName");
-
-namespace AssetHelpers
-{
-/*
-* These helpers handle the usage of some APIs that were deprecated in 5.1
-* but the replacements are not available in older versions.
-* Might be overridden by the `Build.cs` rules
-*/
-#if FILTER_ASSETS_BY_CLASS_PATH
-
-static void SetBlueprintClassFilter(FARFilter& InOutFilter)
-{
-	// UE5.1 deprecated the API to filter using class names
-	InOutFilter.ClassPaths.Add(UBlueprintCore::StaticClass()->GetClassPathName());
-}
-
-static FString GetObjectPathString(const FAssetData& InAssetData)
-{
-	// UE5.1 deprecated 'FAssetData::ObjectPath' in favor of 'FAssetData::GetObjectPathString()'
-	return InAssetData.GetObjectPathString();
-}
-
-#else // FILTER_ASSETS_BY_CLASS_PATH
-
-static void SetBlueprintClassFilter(FARFilter& InOutFilter)
-{
-	InOutFilter.ClassNames.Add(UBlueprintCore::StaticClass()->GetFName());
-}
-
-static FString GetObjectPathString(const FAssetData& InAssetData)
-{
-	return InAssetData.ObjectPath.ToString();
-}
-
-#endif // FILTER_ASSETS_BY_CLASS_PATH
-}
 
 static TArray<FProperty*> GetChangedPropertiesList(
 	UStruct* InStruct, const uint8* DataPtr, const uint8* DefaultDataPtr)
@@ -131,16 +90,16 @@ struct FAssetIndex
 	ClassMap Classes;
 	TArray<const UClass*> Blueprints;
 
-	void ProcessBlueprint(const UBlueprintGeneratedClass* GeneratedClass)
+	void ProcessBlueprint(const UBlueprintGeneratedClass* BlueprintGeneratedClass)
 	{
-		if (GeneratedClass == nullptr)
+		if (BlueprintGeneratedClass == nullptr)
 		{
 			return;
 		}
 
 		int32 BlueprintIndex = Blueprints.Num();
 
-		bool bHasAnyParent = FindBlueprintNativeParents(GeneratedClass, [&](UClass* Parent) {
+		bool bHasAnyParent = FindBlueprintNativeParents(BlueprintGeneratedClass, [&](UClass* Parent) {
 			FString ParentName = Parent->GetFName().ToString();
 			if (!Classes.Contains(ParentName))
 			{
@@ -151,7 +110,7 @@ struct FAssetIndex
 
 			Entry.Blueprints.Add(BlueprintIndex);
 
-			UObject* GeneratedClassDefault = GeneratedClass->ClassDefaultObject;
+			UObject* GeneratedClassDefault = BlueprintGeneratedClass->ClassDefaultObject;
 			UObject* SuperClassDefault = Parent->GetDefaultObject(false);
 			TArray<FProperty*> ChangedProperties = GetChangedPropertiesList(Parent, (uint8*)GeneratedClassDefault, (uint8*)SuperClassDefault);
 
@@ -169,7 +128,7 @@ struct FAssetIndex
 			});
 
 		bool bHasAnyFunctions = false;
-		for (UFunction* Fn : GeneratedClass->CalledFunctions)
+		for (UFunction* Fn : BlueprintGeneratedClass->CalledFunctions)
 		{
 			if (!Fn->HasAnyFunctionFlags(EFunctionFlags::FUNC_Native))
 			{
@@ -199,7 +158,7 @@ struct FAssetIndex
 
 		if (bHasAnyParent || bHasAnyFunctions)
 		{
-			check(Blueprints.Add(GeneratedClass) == BlueprintIndex);
+			check(Blueprints.Add(BlueprintGeneratedClass) == BlueprintIndex);
 		}
 
 		return;
@@ -298,8 +257,8 @@ static void SerializeProperties(TSharedRef<JsonWriter>& Json, FClassEntry& Entry
 
 				Json->WriteValue(TEXT("blueprint"), BlueprintEntry);
 
-				UObject* GeneratedClassDefaultObject = Blueprints[BlueprintEntry]->ClassDefaultObject;
-				const uint8* PropData = PropEntry.Property->ContainerPtrToValuePtr<uint8>(GeneratedClassDefaultObject);
+				UObject* GeneratedClassDefault = Blueprints[BlueprintEntry]->ClassDefaultObject;
+				const uint8* PropData = PropEntry.Property->ContainerPtrToValuePtr<uint8>(GeneratedClassDefault);
 
 				if (ShouldSerializePropertyValue(PropEntry.Property))
 				{
@@ -409,61 +368,6 @@ static void GetNativeClassesByPath(const FString& InDir, TArray<TWeakObjectPtr<U
 	}
 }
 
-static void ProcessAssets(
-	FAssetIndex& Index,
-	const TArray<FAssetData>& TargetAssets)
-{
-	// Show a simpler logging output.
-	// LogTimes are still useful to tell how long it takes to process each asset.
-	TGuardValue<bool> DisableLogVerbosity(GPrintLogVerbosity, false);
-	TGuardValue<bool> DisableLogCategory(GPrintLogCategory, false);
-
-	// We're about to load the assets which might trigger a ton of log messages
-	// Temporarily suppress them during this stage.
-	GEngine->Exec(nullptr, TEXT("log LogVisualStudioTools only"));
-	ON_SCOPE_EXIT
-	{
-		GEngine->Exec(nullptr, TEXT("log reset"));
-	};
-
-	FStreamableManager AssetLoader;
-
-	for (int32 Idx = 0; Idx < TargetAssets.Num(); Idx++)
-	{
-		FSoftClassPath GenClassPath = TargetAssets[Idx].GetTagValueRef<FString>(FBlueprintTags::GeneratedClassPath);
-
-		UE_LOG(LogVisualStudioTools, Display, TEXT("Processing blueprints [%d/%d]: %s"), Idx + 1, TargetAssets.Num(), *GenClassPath.ToString());
-
-		TSharedPtr<FStreamableHandle> Handle = AssetLoader.RequestSyncLoad(GenClassPath);
-		ON_SCOPE_EXIT
-		{
-			// We're done, notify an unload.
-			Handle->ReleaseHandle();
-		};
-
-		if (!Handle.IsValid())
-		{
-			continue;
-		}
-
-		if (auto BlueprintGeneratedClass = Cast<UBlueprintGeneratedClass>(Handle->GetLoadedAsset()))
-		{
-			Index.ProcessBlueprint(BlueprintGeneratedClass);
-		}
-		else
-		{
-			FString ObjectPathString = AssetHelpers::GetObjectPathString(TargetAssets[Idx]);
-			if (!GenClassPath.ToString().Contains(ObjectPathString))
-			{
-				UE_LOG(LogVisualStudioTools, Warning,
-					TEXT("blueprint's ObjectPath is not compatible with GenClassPath, consider re-save it to avoid future issues: \n ObjectPath is: %s \n while GenClassPath is: %s"),
-					*ObjectPathString,
-					*GenClassPath.ToString());
-			}
-		}
-	}
-}
-
 static void RunAssetScan(
 	FAssetIndex& Index,
 	const TArray<TWeakObjectPtr<UClass>>& FilterBaseClasses)
@@ -485,27 +389,22 @@ static void RunAssetScan(
 	TArray<FAssetData> TargetAssets;
 	AssetRegistry.GetAssets(Filter, TargetAssets);
 
-	ProcessAssets(Index, TargetAssets);
+	AssetHelpers::ForEachAsset(TargetAssets,
+		[&](UBlueprintGeneratedClass* BlueprintGeneratedClass, const FAssetData& /*AssetData*/)
+		{
+			Index.ProcessBlueprint(BlueprintGeneratedClass);
+		});
 }
+
 } // namespace VS
 
-static constexpr auto HelpSwitch = TEXT("help");
 static constexpr auto FilterSwitch = TEXT("filter");
 static constexpr auto FullSwitch = TEXT("full");
-static constexpr auto OutputSwitch = TEXT("output");
 
 UVisualStudioToolsCommandlet::UVisualStudioToolsCommandlet()
+	: Super()
 {
-	IsClient = false;
-	IsEditor = true;
-	IsServer = false;
-	LogToConsole = false;
-	ShowErrorCount = false;
-
 	HelpDescription = TEXT("Commandlet for generating data used by Blueprint support in Visual Studio.");
-
-	HelpParamNames.Add(OutputSwitch);
-	HelpParamDescriptions.Add(TEXT("[Required] The file path to write the command output."));
 
 	HelpParamNames.Add(FilterSwitch);
 	HelpParamDescriptions.Add(TEXT("[Optional] Scan only blueprints derived from native classes under the provided path. Defaults to `FPaths::ProjectDir`. Incompatible with `-full`."));
@@ -513,67 +412,15 @@ UVisualStudioToolsCommandlet::UVisualStudioToolsCommandlet()
 	HelpParamNames.Add(FullSwitch);
 	HelpParamDescriptions.Add(TEXT("[Optional] Scan blueprints derived from native classes from ALL modules, include the Engine. This can be _very slow_ for large projects. Incompatible with `-filter`."));
 
-	HelpParamNames.Add(HelpSwitch);
-	HelpParamDescriptions.Add(TEXT("[Optional] Print this help message and quit the commandlet immediately."));
-
 	HelpUsage = TEXT("<Editor-Cmd.exe> <path_to_uproject> -run=VisualStudioTools -output=<path_to_output_file> [-filter=<subdir_native_classes>|-full] [-unattended -noshadercompile -nosound -nullrhi -nocpuprofilertrace -nocrashreports -nosplash]");
 }
 
-void UVisualStudioToolsCommandlet::PrintHelp() const
+int32 UVisualStudioToolsCommandlet::Run(
+	TArray<FString>& Tokens,
+	TArray<FString>& Switches,
+	TMap<FString, FString>& ParamVals,
+	FArchive& OutArchive)
 {
-	UE_LOG(LogVisualStudioTools, Display, TEXT("%s"), *HelpDescription);
-	UE_LOG(LogVisualStudioTools, Display, TEXT("Usage: %s"), *HelpUsage);
-	UE_LOG(LogVisualStudioTools, Display, TEXT("Parameters:"));
-	for (int32 Idx = 0; Idx < HelpParamNames.Num(); ++Idx)
-	{
-		UE_LOG(LogVisualStudioTools, Display, TEXT("\t-%s: %s"), *HelpParamNames[Idx], *HelpParamDescriptions[Idx]);
-	}
-}
-
-int32 UVisualStudioToolsCommandlet::Main(const FString& Params)
-{
-	TArray<FString> Tokens;
-	TArray<FString> Switches;
-	TMap<FString, FString> ParamVals;
-
-	ParseCommandLine(*Params, Tokens, Switches, ParamVals);
-
-	if (Switches.Contains(HelpSwitch))
-	{
-		PrintHelp();
-		return 0;
-	}
-
-	UE_LOG(LogVisualStudioTools, Display, TEXT("Init VS Tools cmdlet."));
-
-	if (!FPaths::IsProjectFilePathSet())
-	{
-		UE_LOG(LogVisualStudioTools, Error, TEXT("You must invoke this commandlet with a project file."));
-		return -1;
-	}
-
-	FString FullPath = ParamVals.FindRef(OutputSwitch);
-
-	if (FullPath.IsEmpty() && !FParse::Value(*Params, TEXT("output "), FullPath))
-	{
-		// VS:1678426 - Initial version was using `-output "path-to-file"` (POSIX style).
-		// However, that does not support paths with spaces, even when surrounded with
-		// quotes because `FParse::Value` only handles that case when there's no space
-		// between the parameter name and quoted value.
-		// For back-compatibility reasons, parse that style by including the space in
-		// the parameter token like it's usually done for the `=` sign.
-		UE_LOG(LogVisualStudioTools, Error, TEXT("Missing file output parameter."));
-		PrintHelp();
-		return -1;
-	}
-
-	TUniquePtr<FArchive> OutArchive{ IFileManager::Get().CreateFileWriter(*FullPath) };
-	if (!OutArchive)
-	{
-		UE_LOG(LogVisualStudioTools, Error, TEXT("Failed to create index with path: %s."), *FullPath);
-		return -1;
-	}
-
 	using namespace VisualStudioTools;
 
 	FString* Filter = ParamVals.Find(FilterSwitch);
@@ -599,11 +446,23 @@ int32 UVisualStudioToolsCommandlet::Main(const FString& Params)
 			GetNativeClassesByPath(FPaths::ProjectDir(), FilterBaseClasses);
 		}
 	}
+	else
+	{
+		for (TObjectIterator<UClass> ClassIt; ClassIt; ++ClassIt)
+		{
+			UClass* TestClass = *ClassIt;
+			if (!TestClass->HasAnyClassFlags(CLASS_Native))
+			{
+				continue;
+			}
+
+			FilterBaseClasses.Add(TestClass);
+		}
+	}
 
 	FAssetIndex Index;
 	RunAssetScan(Index, FilterBaseClasses);
-	SerializeToIndex(Index, *OutArchive);
-
+	SerializeToIndex(Index, OutArchive);
 	UE_LOG(LogVisualStudioTools, Display, TEXT("Found %d blueprints."), Index.Blueprints.Num());
 
 	return 0;

@@ -99,17 +99,19 @@ struct FAssetIndex
 
 		int32 BlueprintIndex = Blueprints.Num();
 
-		bool bHasAnyParent = FindBlueprintNativeParents(BlueprintGeneratedClass, [&](UClass* Parent) {
+		bool bHasAnyParent = FindBlueprintNativeParents(BlueprintGeneratedClass, [&](UClass* Parent) 
+		{
 			FString ParentName = Parent->GetFName().ToString();
 			if (!Classes.Contains(ParentName))
 			{
 				Classes.Add(ParentName).Class = Parent;
 			}
 
-			FClassEntry& Entry = Classes[ParentName];
+			FClassEntry& ClassEntry = Classes[ParentName];
 
-			Entry.Blueprints.Add(BlueprintIndex);
+			ClassEntry.Blueprints.Add(BlueprintIndex);
 
+			// Retrieve the properties from the parent class that changed in the Blueprint class, by comparing their CDOs.
 			UObject* GeneratedClassDefault = BlueprintGeneratedClass->ClassDefaultObject;
 			UObject* SuperClassDefault = Parent->GetDefaultObject(false);
 			TArray<FProperty*> ChangedProperties = GetChangedPropertiesList(Parent, (uint8*)GeneratedClassDefault, (uint8*)SuperClassDefault);
@@ -117,46 +119,38 @@ struct FAssetIndex
 			for (FProperty* Property : ChangedProperties)
 			{
 				FString PropertyName = Property->GetFName().ToString();
-				if (!Entry.Properties.Contains(PropertyName))
+				if (!ClassEntry.Properties.Contains(PropertyName))
 				{
-					Entry.Properties.Add(PropertyName).Property = Property;
+					ClassEntry.Properties.Add(PropertyName).Property = Property;
 				}
 
-				FPropertyEntry& PropEntry = Entry.Properties[PropertyName];
+				FPropertyEntry& PropEntry = ClassEntry.Properties[PropertyName];
 				PropEntry.Blueprints.Add(BlueprintIndex);
 			}
-			});
 
-		bool bHasAnyFunctions = false;
-		for (UFunction* Fn : BlueprintGeneratedClass->CalledFunctions)
-		{
-			if (!Fn->HasAnyFunctionFlags(EFunctionFlags::FUNC_Native))
+			// Iterate over the functions originally from the parent class
+			// and check if they are implemented in the BP class as well.
+			for (TFieldIterator<UFunction> It(Parent, EFieldIteratorFlags::ExcludeSuper); It; ++It)
 			{
-				continue;
+				UFunction* Fn = BlueprintGeneratedClass->FindFunctionByName((*It)->GetFName(), EIncludeSuperFlag::ExcludeSuper);
+				// If the function not present in the BP class directly, it means it was implemented. Otherwise, ignore.
+				if (!Fn)
+				{
+					continue;
+				}
+
+				FString FnName = Fn->GetFName().ToString();
+				if (!ClassEntry.Functions.Contains(FnName))
+				{
+					ClassEntry.Functions.Add(FnName).Function = Fn;
+				}
+
+				FFunctionEntry& FuncEntry = ClassEntry.Functions[FnName];
+				FuncEntry.Blueprints.Add(BlueprintIndex);
 			}
+		});
 
-			bHasAnyFunctions = true;
-
-			UClass* Owner = Fn->GetOwnerClass();
-			FString OwnerName = Owner->GetFName().ToString();
-			if (!Classes.Contains(OwnerName))
-			{
-				Classes.Add(OwnerName).Class = Owner;
-			}
-
-			FClassEntry& Entry = Classes[OwnerName];
-
-			FString FnName = Fn->GetFName().ToString();
-			if (!Entry.Functions.Contains(FnName))
-			{
-				Entry.Functions.Add(FnName).Function = Fn;
-			}
-
-			FFunctionEntry& FuncEntry = Entry.Functions[FnName];
-			FuncEntry.Blueprints.Add(BlueprintIndex);
-		}
-
-		if (bHasAnyParent || bHasAnyFunctions)
+		if (bHasAnyParent)
 		{
 			check(Blueprints.Add(BlueprintGeneratedClass) == BlueprintIndex);
 		}

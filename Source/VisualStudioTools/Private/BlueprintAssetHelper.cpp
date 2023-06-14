@@ -4,8 +4,8 @@
 #include "BlueprintAssetHelpers.h"
 
 #include "AssetRegistry/AssetRegistryModule.h"
-#include "Engine/BlueprintGeneratedClass.h"
 #include "Engine/BlueprintCore.h"
+#include "Engine/BlueprintGeneratedClass.h"
 #include "Engine/Engine.h"
 #include "Engine/StreamableManager.h"
 #include "Misc/ScopeExit.h"

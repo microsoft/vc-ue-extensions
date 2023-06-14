@@ -2,8 +2,9 @@
 // Licensed under the MIT License.
 
 #include "VisualStudioToolsCommandletBase.h"
-#include "VisualStudioTools.h"
+
 #include "HAL/FileManager.h"
+#include "VisualStudioTools.h"
 
 static constexpr auto HelpSwitch = TEXT("help");
 static constexpr auto OutputSwitch = TEXT("output");

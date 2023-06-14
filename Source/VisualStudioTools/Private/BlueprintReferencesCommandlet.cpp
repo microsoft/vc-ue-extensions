@@ -6,6 +6,7 @@
 #include "AssetRegistry/AssetRegistryModule.h"
 #include "BlueprintAssetHelpers.h"
 #include "Engine/BlueprintGeneratedClass.h"
+#include "Algo/Find.h"
 #include "FindInBlueprintManager.h"
 #include "JsonObjectConverter.h"
 #include "Misc/ScopeExit.h"

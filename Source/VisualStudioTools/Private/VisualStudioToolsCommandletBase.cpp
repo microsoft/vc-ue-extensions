@@ -3,6 +3,7 @@
 
 #include "VisualStudioToolsCommandletBase.h"
 
+#include "HAL/FileManager.h"
 #include "VisualStudioTools.h"
 
 static constexpr auto HelpSwitch = TEXT("help");

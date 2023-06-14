@@ -52,7 +52,7 @@ int32 UVSTestAdapterCommandlet::ListTests( const FString& TargetFile )
 		const FString SourceFile = TestInfo.GetSourceFile();
 		const int32 Line = TestInfo.GetSourceFileLine();
 
-		OutFile << *TestCommand << TEXT( "," ) << *DisplayName << TEXT( "," ) << Line << TEXT( "," ) << *SourceFile << std::endl;
+		OutFile << *TestCommand << TEXT( "|" ) << *DisplayName << TEXT( "|" ) << Line << TEXT( "|" ) << *SourceFile << std::endl;
 	}
 
 	UE_LOG( LogVisualStudioTools, Display, TEXT( "Found %d tests" ), TestInfos.Num() );
@@ -111,12 +111,12 @@ int32 UVSTestAdapterCommandlet::RunTests( const FString& TestListFile, const FSt
 		}
 
 		FAutomationTestExecutionInfo ExecutionInfo;
-		const bool CurrentTestSuccessful = Framework.StopTest( ExecutionInfo );
+		const bool CurrentTestSuccessful = Framework.StopTest( ExecutionInfo ) && ExecutionInfo.GetErrorTotal() == 0;
 		AllSuccessful = AllSuccessful && CurrentTestSuccessful;
 
 		const FString Result = CurrentTestSuccessful ? TEXT( "OK" ) : TEXT( "FAIL" );
 
-		OutFile << TEXT( "[RUNTEST]" ) << *TestCommand << TEXT( "," ) << *DisplayName << TEXT( "," ) << *Result << TEXT( "," ) << ExecutionInfo.Duration << std::endl;
+		OutFile << TEXT( "[RUNTEST]" ) << *TestCommand << TEXT( "|" ) << *DisplayName << TEXT( "|" ) << *Result << TEXT( "|" ) << ExecutionInfo.Duration << std::endl;
 
 		if ( !CurrentTestSuccessful )
 		{
@@ -124,7 +124,7 @@ int32 UVSTestAdapterCommandlet::RunTests( const FString& TestListFile, const FSt
 			{
 				if ( Entry.Event.Type == EAutomationEventType::Error )
 				{
-					OutFile << **Entry.Event.Message << std::endl;
+					OutFile << *Entry.Event.Message << std::endl;
 					UE_LOG( LogVisualStudioTools, Error, TEXT( "%s" ), *Entry.Event.Message );
 				}
 			}

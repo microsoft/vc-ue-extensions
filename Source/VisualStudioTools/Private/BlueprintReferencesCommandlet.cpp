@@ -4,6 +4,7 @@
 #include "BlueprintReferencesCommandlet.h"
 
 #include "Algo/Find.h"
+#include "Algo/Transform.h"
 #include "AssetRegistry/AssetRegistryModule.h"
 #include "BlueprintAssetHelpers.h"
 #include "Engine/BlueprintGeneratedClass.h"

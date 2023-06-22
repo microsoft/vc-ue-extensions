@@ -22,11 +22,7 @@ public:
 
 public:
 	virtual int32 Main(const FString& Params) override;
-	int32 RunTests(const FString& TestListFile, const FString& ResultsFile);
-	int32 ListTests(const FString& TargetFile);
 
 private:
-	void ReadTestsFromFile(const FString& InFile, TArray<FAutomationTestInfo>& OutTestList);
-	void GetAllTests(TArray<FAutomationTestInfo>& OutTestList);
 	void PrintHelp() const;
 };

@@ -5,6 +5,7 @@
 #include "Runtime/Core/Public/Async/TaskGraphInterfaces.h"
 #include "Runtime/Core/Public/Containers/Ticker.h"
 #include <string>
+#include <fstream>
 
 #include "VisualStudioTools.h"
 

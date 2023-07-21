@@ -9,12 +9,7 @@
 
 #include "VisualStudioTools.h"
 
-static constexpr auto SmokeFilterParam = TEXT("smokefilter");
-static constexpr auto EngineFilterParam = TEXT("enginefilter");
-static constexpr auto ProductFilterParam = TEXT("productfilter");
-static constexpr auto PerfFilterParam = TEXT("perffilter");
-static constexpr auto StressFilterParam = TEXT("stressfilter");
-static constexpr auto NegativeFilterParam = TEXT("negativefilter");
+static constexpr auto FiltersParam = TEXT("filters");
 static constexpr auto ListTestsParam = TEXT("listtests");
 static constexpr auto RunTestsParam = TEXT("runtests");
 static constexpr auto TestResultsFileParam = TEXT("testresultfile");
@@ -178,23 +173,8 @@ UVSTestAdapterCommandlet::UVSTestAdapterCommandlet()
 	HelpParamNames.Add(TestResultsFileParam);
 	HelpParamDescriptions.Add(TEXT("[Optional] The output file from running test cases that we parse to retrieve test case results."));
 
-    HelpParamNames.Add(SmokeFilterParam);
-    HelpParamDescriptions.Add(TEXT("[Optional] True to enable smoke tests, False otherwise. Defaults to True."));
-
-    HelpParamNames.Add(EngineFilterParam);
-    HelpParamDescriptions.Add(TEXT("[Optional] True to enable engine tests, False otherwise. Defaults to False."));
-
-    HelpParamNames.Add(ProductFilterParam);
-    HelpParamDescriptions.Add(TEXT("[Optional] True to enable product tests, False otherwise. Defaults to True."));
-
-    HelpParamNames.Add(PerfFilterParam);
-    HelpParamDescriptions.Add(TEXT("[Optional] True to enable perf tests, False otherwise. Defaults to True."));
-
-    HelpParamNames.Add(StressFilterParam);
-    HelpParamDescriptions.Add(TEXT("[Optional] True to enable stress tests, False otherwise. Defaults to True."));
-
-    HelpParamNames.Add(NegativeFilterParam);
-    HelpParamDescriptions.Add(TEXT("[Optional] True to enable negative tests, False otherwise. Defaults to True."));
+    HelpParamNames.Add(FiltersParam);
+    HelpParamDescriptions.Add(TEXT("[Optional] List of test filters to enable separated by '+'. Default is 'smoke+product+perf+stress+negative'"));
 
 	HelpParamNames.Add(HelpParam);
 	HelpParamDescriptions.Add(TEXT("[Optional] Print this help message and quit the commandlet immediately."));
@@ -229,29 +209,62 @@ int32 UVSTestAdapterCommandlet::Main(const FString& Params)
     uint32 filter = EAutomationTestFlags::PriorityMask |
         EAutomationTestFlags::ProductFilter | EAutomationTestFlags::SmokeFilter |
         EAutomationTestFlags::PerfFilter | EAutomationTestFlags::StressFilter | EAutomationTestFlags::NegativeFilter;
-    if (ParamVals.Contains(SmokeFilterParam) && ParamVals[SmokeFilterParam] == "False")
+    if (ParamVals.Contains(FiltersParam))
     {
-        filter &= ~EAutomationTestFlags::SmokeFilter;
-    }
-    if (ParamVals.Contains(EngineFilterParam) && ParamVals[EngineFilterParam] == "True")
-    {
-        filter |= EAutomationTestFlags::EngineFilter;
-    }
-    if (ParamVals.Contains(ProductFilterParam) && ParamVals[ProductFilterParam] == "False")
-    {
-        filter &= ~EAutomationTestFlags::ProductFilter;
-    }
-    if (ParamVals.Contains(PerfFilterParam) && ParamVals[PerfFilterParam] == "False")
-    {
-        filter &= ~EAutomationTestFlags::PerfFilter;
-    }
-    if (ParamVals.Contains(StressFilterParam) && ParamVals[StressFilterParam] == "False")
-    {
-        filter &= ~EAutomationTestFlags::StressFilter;
-    }
-    if (ParamVals.Contains(NegativeFilterParam) && ParamVals[NegativeFilterParam] == "False")
-    {
-        filter &= ~EAutomationTestFlags::NegativeFilter;
+        FString filters = ParamVals[FiltersParam];
+        if (filters.Contains("smoke"))
+        {
+            filter |= EAutomationTestFlags::SmokeFilter;
+        }
+        else
+        {
+            filter &= ~EAutomationTestFlags::SmokeFilter;
+        }
+
+        if (filters.Contains("engine"))
+        {
+            filter |= EAutomationTestFlags::EngineFilter;
+        }
+        else
+        {
+            filter &= ~EAutomationTestFlags::EngineFilter;
+        }
+
+        if (filters.Contains("product"))
+        {
+            filter |= EAutomationTestFlags::ProductFilter;
+        }
+        else
+        {
+            filter &= ~EAutomationTestFlags::ProductFilter;
+        }
+
+        if (filters.Contains("perf"))
+        {
+            filter |= EAutomationTestFlags::PerfFilter;
+        }
+        else
+        {
+            filter &= ~EAutomationTestFlags::PerfFilter;
+        }
+
+        if (filters.Contains("stress"))
+        {
+            filter |= EAutomationTestFlags::StressFilter;
+        }
+        else
+        {
+            filter &= ~EAutomationTestFlags::StressFilter;
+        }
+
+        if (filters.Contains("negative"))
+        {
+            filter |= EAutomationTestFlags::NegativeFilter;
+        }
+        else
+        {
+            filter &= ~EAutomationTestFlags::NegativeFilter;
+        }
     }
 
     FAutomationTestFramework::GetInstance().SetRequestedTestFilter(filter);

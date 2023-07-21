@@ -21,7 +21,7 @@ public:
 	UVSTestAdapterCommandlet();
 
 public:
-	virtual int32 Main(const FString& Params) override;
+	virtual int32 Main(const FString &Params) override;
 
 private:
 	void PrintHelp() const;

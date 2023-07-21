@@ -15,32 +15,34 @@ static constexpr auto RunTestsParam = TEXT("runtests");
 static constexpr auto TestResultsFileParam = TEXT("testresultfile");
 static constexpr auto HelpParam = TEXT("help");
 
-static void GetAllTests(TArray< FAutomationTestInfo >& OutTestList)
+static void GetAllTests(TArray<FAutomationTestInfo>& OutTestList)
 {
 	FAutomationTestFramework& Framework = FAutomationTestFramework::GetInstance();
 	Framework.GetValidTestNames(OutTestList);
 }
 
-static void ReadTestsFromFile(const FString& InFile, TArray< FAutomationTestInfo >& OutTestList)
+static void ReadTestsFromFile(const FString& InFile, TArray<FAutomationTestInfo>& OutTestList)
 {
-	TSet< FString > TestCommands;
+	TSet<FString> TestCommands;
 
-	std::wifstream InStream(*InFile);
-	if (!InStream.good())
+	// Wrapping in an inner scope to ensure automatic destruction of InStream object without explicitly calling .close().
 	{
-		UE_LOG(LogVisualStudioTools, Error, TEXT("Failed to open file at path: %s"), *InFile);
-		return;
-	}
-
-	std::wstring Line;
-	while (std::getline(InStream, Line))
-	{
-		if (Line.length() > 0)
+		std::wifstream InStream(*InFile);
+		if (!InStream.good())
 		{
-			TestCommands.Add(FString(Line.c_str()));
+			UE_LOG(LogVisualStudioTools, Error, TEXT("Failed to open file at path: %s"), *InFile);
+			return;
+		}
+
+		std::wstring Line;
+		while (std::getline(InStream, Line))
+		{
+			if (Line.length() > 0)
+			{
+				TestCommands.Add(FString(Line.c_str()));
+			}
 		}
 	}
-	InStream.close();
 
 	GetAllTests(OutTestList);
 	for (int32 Idx = OutTestList.Num() - 1; Idx >= 0; Idx--)
@@ -63,7 +65,7 @@ static int32 ListTests(const FString& TargetFile)
 
 	FAutomationTestFramework& Framework = FAutomationTestFramework::GetInstance();
 
-	TArray< FAutomationTestInfo > TestInfos;
+	TArray<FAutomationTestInfo> TestInfos;
 	GetAllTests(TestInfos);
 
 	for (const auto& TestInfo : TestInfos)
@@ -91,7 +93,7 @@ static int32 RunTests(const FString& TestListFile, const FString& ResultsFile)
 		return 1;
 	}
 
-	TArray< FAutomationTestInfo > TestInfos;
+	TArray<FAutomationTestInfo> TestInfos;
 	if (TestListFile.Equals(TEXT("All"), ESearchCase::IgnoreCase))
 	{
 		GetAllTests(TestInfos);
@@ -137,6 +139,7 @@ static int32 RunTests(const FString& TestListFile, const FString& ResultsFile)
 
 		const FString Result = CurrentTestSuccessful ? TEXT("OK") : TEXT("FAIL");
 
+		// [RUNTEST] is part of the protocol, so do not remove.
 		OutFile << TEXT("[RUNTEST]") << *TestCommand << TEXT("|") << *DisplayName << TEXT("|") << *Result << TEXT("|") << ExecutionInfo.Duration << std::endl;
 
 		if (!CurrentTestSuccessful)
@@ -165,16 +168,16 @@ UVSTestAdapterCommandlet::UVSTestAdapterCommandlet()
 	HelpUsage = TEXT("<Editor-Cmd.exe> <path_to_uproject> -run=VSTestAdapter [-stdout -multiprocess -silent -unattended -AllowStdOutLogVerbosity -NoShaderCompile]");
 
 	HelpParamNames.Add(ListTestsParam);
-	HelpParamDescriptions.Add(TEXT("[Optional] The file path to write the test cases retrieved from FAutomationTestFramework"));
+	HelpParamDescriptions.Add(TEXT("[Required] The file path to write the test cases retrieved from FAutomationTestFramework"));
 
 	HelpParamNames.Add(RunTestsParam);
-	HelpParamDescriptions.Add(TEXT("[Optional] The test cases that will be sent to FAutomationTestFramework to run."));
+	HelpParamDescriptions.Add(TEXT("[Required] The test cases that will be sent to FAutomationTestFramework to run."));
 
 	HelpParamNames.Add(TestResultsFileParam);
-	HelpParamDescriptions.Add(TEXT("[Optional] The output file from running test cases that we parse to retrieve test case results."));
+	HelpParamDescriptions.Add(TEXT("[Required] The output file from running test cases that we parse to retrieve test case results."));
 
-    HelpParamNames.Add(FiltersParam);
-    HelpParamDescriptions.Add(TEXT("[Optional] List of test filters to enable separated by '+'. Default is 'smoke+product+perf+stress+negative'"));
+	HelpParamNames.Add(FiltersParam);
+	HelpParamDescriptions.Add(TEXT("[Optional] List of test filters to enable separated by '+'. Default is 'smoke+product+perf+stress+negative'"));
 
 	HelpParamNames.Add(HelpParam);
 	HelpParamDescriptions.Add(TEXT("[Optional] Print this help message and quit the commandlet immediately."));
@@ -205,69 +208,69 @@ int32 UVSTestAdapterCommandlet::Main(const FString& Params)
 		return 0;
 	}
 
-    // Default to all the test filters on except for engine tests.
-    uint32 filter = EAutomationTestFlags::PriorityMask |
-        EAutomationTestFlags::ProductFilter | EAutomationTestFlags::SmokeFilter |
-        EAutomationTestFlags::PerfFilter | EAutomationTestFlags::StressFilter | EAutomationTestFlags::NegativeFilter;
-    if (ParamVals.Contains(FiltersParam))
-    {
-        FString filters = ParamVals[FiltersParam];
-        if (filters.Contains("smoke"))
-        {
-            filter |= EAutomationTestFlags::SmokeFilter;
-        }
-        else
-        {
-            filter &= ~EAutomationTestFlags::SmokeFilter;
-        }
+	// Default to all the test filters on except for engine tests.
+	uint32 filter = EAutomationTestFlags::PriorityMask |
+					EAutomationTestFlags::ProductFilter | EAutomationTestFlags::SmokeFilter |
+					EAutomationTestFlags::PerfFilter | EAutomationTestFlags::StressFilter | EAutomationTestFlags::NegativeFilter;
+	if (ParamVals.Contains(FiltersParam))
+	{
+		FString filters = ParamVals[FiltersParam];
+		if (filters.Contains("smoke"))
+		{
+			filter |= EAutomationTestFlags::SmokeFilter;
+		}
+		else
+		{
+			filter &= ~EAutomationTestFlags::SmokeFilter;
+		}
 
-        if (filters.Contains("engine"))
-        {
-            filter |= EAutomationTestFlags::EngineFilter;
-        }
-        else
-        {
-            filter &= ~EAutomationTestFlags::EngineFilter;
-        }
+		if (filters.Contains("engine"))
+		{
+			filter |= EAutomationTestFlags::EngineFilter;
+		}
+		else
+		{
+			filter &= ~EAutomationTestFlags::EngineFilter;
+		}
 
-        if (filters.Contains("product"))
-        {
-            filter |= EAutomationTestFlags::ProductFilter;
-        }
-        else
-        {
-            filter &= ~EAutomationTestFlags::ProductFilter;
-        }
+		if (filters.Contains("product"))
+		{
+			filter |= EAutomationTestFlags::ProductFilter;
+		}
+		else
+		{
+			filter &= ~EAutomationTestFlags::ProductFilter;
+		}
 
-        if (filters.Contains("perf"))
-        {
-            filter |= EAutomationTestFlags::PerfFilter;
-        }
-        else
-        {
-            filter &= ~EAutomationTestFlags::PerfFilter;
-        }
+		if (filters.Contains("perf"))
+		{
+			filter |= EAutomationTestFlags::PerfFilter;
+		}
+		else
+		{
+			filter &= ~EAutomationTestFlags::PerfFilter;
+		}
 
-        if (filters.Contains("stress"))
-        {
-            filter |= EAutomationTestFlags::StressFilter;
-        }
-        else
-        {
-            filter &= ~EAutomationTestFlags::StressFilter;
-        }
+		if (filters.Contains("stress"))
+		{
+			filter |= EAutomationTestFlags::StressFilter;
+		}
+		else
+		{
+			filter &= ~EAutomationTestFlags::StressFilter;
+		}
 
-        if (filters.Contains("negative"))
-        {
-            filter |= EAutomationTestFlags::NegativeFilter;
-        }
-        else
-        {
-            filter &= ~EAutomationTestFlags::NegativeFilter;
-        }
-    }
+		if (filters.Contains("negative"))
+		{
+			filter |= EAutomationTestFlags::NegativeFilter;
+		}
+		else
+		{
+			filter &= ~EAutomationTestFlags::NegativeFilter;
+		}
+	}
 
-    FAutomationTestFramework::GetInstance().SetRequestedTestFilter(filter);
+	FAutomationTestFramework::GetInstance().SetRequestedTestFilter(filter);
 	if (ParamVals.Contains(ListTestsParam))
 	{
 		return ListTests(ParamVals[ListTestsParam]);

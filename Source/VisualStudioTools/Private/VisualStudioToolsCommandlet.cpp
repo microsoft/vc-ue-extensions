@@ -334,7 +334,15 @@ static TArray<FString> GetModulesByPath(const FString& InDir)
 			return FPaths::IsUnderDirectory(Module, InDir);
 		},
 		[](const FString& Module) {
+#if 0
+			// Old version assumes that each module is in a folder with the same name as the module
 			return FPaths::GetBaseFilename(FPaths::GetPath(*Module));
+#else
+			// New version assumes that each module is in a file with the name Module.Build.cs
+			FString TempString = FPaths::GetBaseFilename(*Module);
+			TempString.RemoveFromEnd(TEXT(".Build"));
+			return TempString;
+#endif
 		});
 
 	return OutResult;

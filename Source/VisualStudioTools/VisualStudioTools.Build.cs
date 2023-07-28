@@ -6,7 +6,19 @@ public class VisualStudioTools : ModuleRules
 {
     public VisualStudioTools(ReadOnlyTargetRules Target) : base(Target)
     {
-        PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
+        // This is useful to get proper header suggestions in the IDE and validate 
+        // the plugin build without having to affect for the whole target, which is 
+        // expensive in source-builds of the engine.
+        bool bForceDisableUnity = System.Environment.GetEnvironmentVariable("VSTUE_DisableUnityBuild") == "1";
+        if (bForceDisableUnity)
+        {
+            PCHUsage = ModuleRules.PCHUsageMode.NoPCHs;
+            bUseUnity = false;
+        }
+        else
+        {
+            PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
+        }
 
         // When debugging the commandlet code, you can uncomment the line below
         // to get proper local variable inspection and less inlined stack frames

@@ -10,6 +10,7 @@
 #include "Engine/BlueprintGeneratedClass.h"
 #include "FindInBlueprintManager.h"
 #include "JsonObjectConverter.h"
+#include "Misc/Paths.h"
 #include "Misc/ScopeExit.h"
 #include "Policies/CondensedJsonPrintPolicy.h"
 #include "VisualStudioTools.h"

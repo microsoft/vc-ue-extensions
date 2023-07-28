@@ -4,9 +4,11 @@
 
 #include "Algo/Transform.h"
 #include "AssetRegistry/AssetRegistryModule.h"
+#include "Blueprint/BlueprintSupport.h"
 #include "BlueprintAssetHelpers.h"
 #include "Engine/BlueprintGeneratedClass.h"
 #include "JsonObjectConverter.h"
+#include "Misc/Paths.h"
 #include "Misc/ScopeExit.h"
 #include "Policies/CondensedJsonPrintPolicy.h"
 #include "SourceCodeNavigation.h"
@@ -99,7 +101,7 @@ struct FAssetIndex
 
 		int32 BlueprintIndex = Blueprints.Num();
 
-		bool bHasAnyParent = FindBlueprintNativeParents(BlueprintGeneratedClass, [&](UClass* Parent) 
+		bool bHasAnyParent = FindBlueprintNativeParents(BlueprintGeneratedClass, [&](UClass* Parent)
 		{
 			FString ParentName = Parent->GetFName().ToString();
 			if (!Classes.Contains(ParentName))

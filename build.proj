@@ -1,6 +1,6 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
-        <PluginFolder>$([System.IO.Path]::GetDirectoryName($(MSBuildProjectDirectory)))</PluginFolder>
+        <PluginFolder>$(MSBuildProjectDirectory)</PluginFolder>
         <PluginFile>$([System.IO.Path]::Combine($(PluginFolder), `VisualStudioTools.uplugin`))</PluginFile>
         <OutputPath Condition=" '$(OutputPath)'=='' ">$([System.IO.Path]::Combine($(PluginFolder), "bin"))</OutputPath>
         <EnginePath>$(UnrealEngine)</EnginePath>
@@ -8,12 +8,14 @@
             $([MSBuild]::GetRegistryValue('HKEY_LOCAL_MACHINE\SOFTWARE\EpicGames\Unreal Engine\$(UnrealEngine)', 'InstalledDirectory')) 
         </EnginePath>
         <UATScript>$(EnginePath.Trim())\Engine\Build\BatchFiles\RunUAT.bat</UATScript>
-        <StrictIncludesFlag Condition=" '$(StrictIncludes)' == 'true'">-StrictIncludes</StrictIncludesFlag>
+        <UnversionedFlag Condition=" '$(Versioned)' != 'true'">-Unversioned</UnversionedFlag>
     </PropertyGroup>
     <Target Name="Build">
         <Error Text="Cannot locate the RunUAT.bat script. Check if the $UnrealEngine property is a valid path or installed version." Condition="!Exists('$(UATScript)')"></Error>
         <MakeDir Directories="$(OutputPath)" Condition="!Exists('$(OutputPath)')" />
-        <Exec Command="&quot;$(UATScript)&quot; BuildPlugin -Plugin=&quot;$(PluginFile)&quot; -TargetPlatforms=Win64 -Package=&quot;$(OutputPath)&quot; $(StrictIncludesFlag) -FromMsBuild -Unversioned" />
+        <Exec 
+            Command="&quot;$(UATScript)&quot; BuildPlugin -Plugin=&quot;$(PluginFile)&quot; -TargetPlatforms=Win64 -Package=&quot;$(OutputPath)&quot; $(UnversionedFlag) -FromMsBuild" 
+            EnvironmentVariables="VSTUE_DisableUnityBuild=1"/>
     </Target>
     <Target Name="Clean" >
         <RemoveDir Directories="$(OutputPath);"/>

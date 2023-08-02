@@ -1,0 +1,21 @@
+{
+    "tsaVersion": "TsaV2",
+    "codebase": "NewOrUpdate",
+    "codebaseName": "vc-ue-extensions",
+    "tsaStamp": "DevDiv",
+    "tsaEnvironment": "PROD",
+    "notificationAliases": [
+       "hebaggio@microsoft.com",
+       "cpp-apogee@microsoft.com"
+    ],
+    "codebaseAdmins": [
+        "REDMOND\\hebaggio",
+        "REDMOND\\cpp-apogee"
+    ],
+    "instanceUrl": "https://devdiv.visualstudio.com",
+    "projectName": "DevDiv",
+    "areaPath": "DevDiv\\Cpp Developer Experience\\Apogee\\Unreal Engine integrations",
+    "iterationPath": "DevDiv",
+    "alltools": true,
+    "repositoryName": "vc-ue-extensions"
+ }

@@ -32,3 +32,9 @@ steps:
 - task: CredScan@3
   inputs:
     scanFolder: '$(Build.SourcesDirectory)'
+
+- task: TSAUpload@2
+  displayName: 'TSA upload'
+  inputs:
+    GdnPublishTsaOnboard: True
+    GdnPublishTsaConfigFile: '$(Build.SourcesDirectory)/azure-pipelines/TSAOptions.json'

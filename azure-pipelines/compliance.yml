@@ -13,7 +13,7 @@ pr:
       - dev/*
 
 pool:
-  vmImage: windows-latest
+  name: VSEngSS-MicroBuild2022-1ES
 
 jobs:
 - job: 'UnrealEngine_VisualStudioTools_Compliance'

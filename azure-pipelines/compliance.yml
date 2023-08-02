@@ -74,6 +74,7 @@ jobs:
         publishXML: true
         userProvideBuildInfo: auto
         rulesetName: Recommended
+        setupCommandlinePicker: 'vs2022'
     - task: TSAUpload@2
       displayName: 'TSA upload'
       inputs:

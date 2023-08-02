@@ -60,18 +60,20 @@ jobs:
     - task: CredScan@3
       inputs:
         scanFolder: '$(Build.SourcesDirectory)'
-    - task: SDLNativeRules@3
-      displayName: 'Run the PREfast SDL Native Rules for MSBuild'
-      inputs:
-        publishXML: false
-        userProvideBuildInfo: auto
-        rulesetName: Recommended
     - task: BinSkim@4
       inputs:
         InputType: 'Basic'
         Function: 'analyze'
         TargetPattern: 'guardianGlob'
         AnalyzeTargetGlob: '$(Build.ArtifactStagingDirectory)/drop/**.dll'
+    - task: SDLNativeRules@3
+      displayName: 'Run the PREfast SDL Native Rules for MSBuild'
+      env:
+        SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+      inputs:
+        publishXML: true
+        userProvideBuildInfo: auto
+        rulesetName: Recommended
     - task: TSAUpload@2
       displayName: 'TSA upload'
       inputs:

@@ -1,3 +1,7 @@
+variables:
+  Codeql.Enabled: true
+  Codeql.SourceRoot: '$(Build.SourcesDirectory)'
+
 trigger:
 - main
 
@@ -9,32 +13,72 @@ pr:
       - dev/*
 
 pool:
-  vmImage: windows-latest
+  name: VSEngSS-MicroBuild2022-1ES
 
-steps:
-- task: PoliCheck@2
-  inputs:
-    targetType: 'F'
-    targetArgument: '$(Build.SourcesDirectory)'
-
-- task: ComponentGovernanceComponentDetection@0
-  displayName: 'Component Detection'
-
-- task: AntiMalware@4
-  inputs:
-    InputType: 'Basic'
-    ScanType: 'CustomScan'
-    FileDirPath: '$(Build.StagingDirectory)'
-    TreatSignatureUpdateFailureAs: 'Warning'
-    SignatureFreshness: 'UpToDate'
-    TreatStaleSignatureAs: 'Error'
-
-- task: CredScan@3
-  inputs:
-    scanFolder: '$(Build.SourcesDirectory)'
-
-- task: TSAUpload@2
-  displayName: 'TSA upload'
-  inputs:
-    GdnPublishTsaOnboard: True
-    GdnPublishTsaConfigFile: '$(Build.SourcesDirectory)/azure-pipelines/TSAOptions.json'
+jobs:
+- job: 'UnrealEngine_VisualStudioTools_Compliance'
+  timeoutInMinutes: 1440
+  steps:
+    - task: CmdLine@2
+      displayName: 'Clone Unreal Engine Repository'
+      inputs:
+        script: 'git clone "https://$(token)@github.com/EpicGames/UnrealEngine" --single-branch --branch $(ue_branch) --depth 1 ue'
+        workingDirectory: '$(Agent.BuildDirectory)'
+    - task: PowerShell@2
+      displayName: '[UE] Append /unattended option'
+      inputs:
+        targetType: 'inline'
+        script:
+          $filePath = "$(Agent.BuildDirectory)/ue/Setup.bat";
+          (Get-Content $filePath).Replace("/register", "/register /unattended") | Set-Content $filePath
+    - task: CmdLine@2
+      displayName: '[UE] Run Setup.bat'
+      inputs:
+        script: 'ue\Setup.bat --force'
+        workingDirectory: '$(Agent.BuildDirectory)'
+    - task: MSBuild@1
+      displayName: 'Build Plugin'
+      timeoutInMinutes: 300
+      inputs:
+        solution: '$(Build.SourcesDirectory)/build.proj'
+        msbuildArguments: '/p:UnrealEngine=$(Agent.BuildDirectory)\ue /p:OutputPath=$(Build.ArtifactStagingDirectory)\drop'
+        createLogFile: true
+    - task: PoliCheck@2
+      inputs:
+        targetType: 'F'
+        targetArgument: '$(Build.SourcesDirectory)'
+    - task: ComponentGovernanceComponentDetection@0
+      inputs:
+        ignoreDirectories: '$(Agent.BuildDirectory)\ue'
+      displayName: 'Component Detection'
+    - task: AntiMalware@4
+      inputs:
+        InputType: 'Basic'
+        ScanType: 'CustomScan'
+        FileDirPath: '$(Build.StagingDirectory)'
+        TreatSignatureUpdateFailureAs: 'Warning'
+        SignatureFreshness: 'UpToDate'
+        TreatStaleSignatureAs: 'Error'
+    - task: CredScan@3
+      inputs:
+        scanFolder: '$(Build.SourcesDirectory)'
+    - task: BinSkim@4
+      inputs:
+        InputType: 'Basic'
+        Function: 'analyze'
+        TargetPattern: 'guardianGlob'
+        AnalyzeTargetGlob: '$(Build.ArtifactStagingDirectory)/drop/**.dll'
+    - task: SDLNativeRules@3
+      displayName: 'Run the PREfast SDL Native Rules for MSBuild'
+      env:
+        SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+      inputs:
+        publishXML: true
+        userProvideBuildInfo: auto
+        rulesetName: Recommended
+        setupCommandlinePicker: 'vs2022'
+    - task: TSAUpload@2
+      displayName: 'TSA upload'
+      inputs:
+        GdnPublishTsaOnboard: True
+        GdnPublishTsaConfigFile: '$(Build.SourcesDirectory)/azure-pipelines/TSAOptions.json'

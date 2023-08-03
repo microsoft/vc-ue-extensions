@@ -41,7 +41,7 @@ By default the script will disable Unity Builds in the plugin modules to catch e
 If you get errors due to unity build problems, you get the same errors in Visual Studio by generating the solution with the command below. This will allow Visual Studio to suggest the includes as code fixes. Note that this will overwrite any existing solution and projects that are already present.
 
 ```powershell
-$env:VSTUE_DisableUnityBuild=1; & "C:\Program Files\Epic Games\UE_5.2\Engine\Build\BatchFiles\Build.bat" -projectfiles -project="full_path_to_game.uproject" -game
+$env:VSTUE_IsCustomDevBuild=1; & "C:\Program Files\Epic Games\UE_5.2\Engine\Build\BatchFiles\Build.bat" -projectfiles -project="full_path_to_game.uproject" -game
 ```
 
 The module rules for the plugin check the enviroment variable above to use the more strict include settings.

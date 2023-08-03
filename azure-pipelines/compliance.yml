@@ -41,13 +41,15 @@ jobs:
       timeoutInMinutes: 300
       inputs:
         solution: '$(Build.SourcesDirectory)/build.proj'
-        msbuildArguments: '-p:UnrealEngine=$(Agent.BuildDirectory)\ue;OutputPath=$(Build.ArtifactStagingDirectory)\drop'
+        msbuildArguments: '/p:UnrealEngine=$(Agent.BuildDirectory)\ue /p:OutputPath=$(Build.ArtifactStagingDirectory)\drop'
         createLogFile: true
     - task: PoliCheck@2
       inputs:
         targetType: 'F'
         targetArgument: '$(Build.SourcesDirectory)'
     - task: ComponentGovernanceComponentDetection@0
+      inputs:
+        ignoreDirectories: '$(Agent.BuildDirectory)\ue'
       displayName: 'Component Detection'
     - task: AntiMalware@4
       inputs:

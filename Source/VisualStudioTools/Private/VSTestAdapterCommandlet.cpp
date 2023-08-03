@@ -125,10 +125,10 @@ static int32 RunTests(const FString& TestListFile, const FString& ResultsFile)
 			FTaskGraphInterface::Get().ProcessThreadUntilIdle(ENamedThreads::GameThread);
 
 			const FDateTime Now = FDateTime::UtcNow();
-			const FTimespan Delta = Now - Last;
+			const float Delta = static_cast<float>((Now - Last).GetTotalSeconds());
 
 			// .. and the core FTicker
-			FTSTicker::GetCoreTicker().Tick(Delta.GetTotalSeconds());
+			FTSTicker::GetCoreTicker().Tick(Delta);
 
 			Last = Now;
 		}

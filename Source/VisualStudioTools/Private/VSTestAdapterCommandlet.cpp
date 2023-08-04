@@ -4,6 +4,7 @@
 
 #include "Runtime/Core/Public/Async/TaskGraphInterfaces.h"
 #include "Runtime/Core/Public/Containers/Ticker.h"
+#include "Runtime/Launch/Resources/Version.h"
 #include <string>
 #include <fstream>
 
@@ -128,7 +129,11 @@ static int32 RunTests(const FString& TestListFile, const FString& ResultsFile)
 			const float Delta = static_cast<float>((Now - Last).GetTotalSeconds());
 
 			// .. and the core FTicker
+#if ENGINE_MAJOR_VERSION >= 5
 			FTSTicker::GetCoreTicker().Tick(Delta);
+#else
+			FTicker::GetCoreTicker().Tick(Delta);
+#endif
 
 			Last = Now;
 		}

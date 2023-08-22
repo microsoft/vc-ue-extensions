@@ -11,8 +11,8 @@ cpp_naming_rule.swidget_prefixed.style                     = swidget_style
 cpp_naming_rule.uobject_prefixed.symbols                   = uobject_class
 cpp_naming_rule.uobject_prefixed.style                     = uobject_style
 
-cpp_naming_rule.boolelans_prefixed.symbols                 = boolelan_vars
-cpp_naming_rule.boolelans_prefixed.style                   = boolean_style
+cpp_naming_rule.booleans_prefixed.symbols                 = boolean_vars
+cpp_naming_rule.booleans_prefixed.style                   = boolean_style
 
 cpp_naming_rule.structs_prefixed.symbols                   = structs
 cpp_naming_rule.structs_prefixed.style                     = unreal_engine_structs
@@ -37,8 +37,8 @@ cpp_naming_symbols.swidget_class.applicable_type           = SWidget
 cpp_naming_symbols.uobject_class.applicable_kinds          = class
 cpp_naming_symbols.uobject_class.applicable_type           = UObject
 
-cpp_naming_symbols.boolelan_vars.applicable_kinds          = local,parameter,field
-cpp_naming_symbols.boolelan_vars.applicable_type           = bool
+cpp_naming_symbols.boolean_vars.applicable_kinds          = local,parameter,field
+cpp_naming_symbols.boolean_vars.applicable_type           = bool
 
 cpp_naming_symbols.enums.applicable_kinds                  = enum
 

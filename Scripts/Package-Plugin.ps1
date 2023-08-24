@@ -1,6 +1,9 @@
 param(
    [Parameter(Mandatory=$true)]
    [string]
+   $EnginePath,
+   [Parameter(Mandatory=$true)]
+   [string]
    $EngineVersion
 )
 
@@ -11,8 +14,7 @@ function New-TemporaryDirectory {
 }
 
 $PackagePath = New-TemporaryDirectory
-
-& msbuild "-p:UnrealEngine=$EngineVersion;OutputPath=$PackagePath;Versioned=true"
+& msbuild "-p:UnrealEngine=$EnginePath;OutputPath=$PackagePath;Versioned=true"
 
 # Add EnabledByDefault property in the descriptor file
 Write-Host "Patch plugin descriptor file"

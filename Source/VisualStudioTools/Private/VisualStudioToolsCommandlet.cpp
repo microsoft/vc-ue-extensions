@@ -12,6 +12,7 @@
 #include "Misc/ScopeExit.h"
 #include "Policies/CondensedJsonPrintPolicy.h"
 #include "SourceCodeNavigation.h"
+#include "UObject/CoreRedirects.h"
 #include "UObject/UObjectIterator.h"
 #include "VisualStudioTools.h"
 
@@ -380,6 +381,29 @@ static void RunAssetScan(
 			FObjectPropertyBase::GetExportPath(Class.Get(), nullptr /*Parent*/, nullptr /*ExportRootScope*/, 0 /*PortFlags*/));
 		});
 
+	// Take account of any core redirects for the blueprint classes we want to scan.
+	auto FilterArray = Filter.TagsAndValues.Array();
+	for (auto OneEntry : FilterArray)
+	{
+		if (OneEntry.Value.IsSet())
+		{
+			// I don't know what this CoreUObject wrapper is, but it needs removing and then adding back to any previous name.
+			FString ClassName = OneEntry.Value.GetValue();
+			ClassName.RemoveFromStart("/Script/CoreUObject.Class'");
+			ClassName.RemoveFromEnd("'");
+
+			TArray<FCoreRedirectObjectName> PreviousNames;
+			if (FCoreRedirects::FindPreviousNames(ECoreRedirectFlags::Type_Class, ClassName, PreviousNames))
+			{
+				for (auto PreviousName : PreviousNames)
+				{
+					FString PreviousString = "/Script/CoreUObject.Class'" + PreviousName.ToString() + "'";
+					Filter.TagsAndValues.Add(OneEntry.Key, PreviousString);
+				}
+			}
+		}
+	}
+	
 	IAssetRegistry& AssetRegistry = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry")).Get();
 
 	TArray<FAssetData> TargetAssets;

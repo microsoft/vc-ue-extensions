@@ -4,6 +4,7 @@
 #include "BlueprintAssetHelpers.h"
 
 #include "AssetRegistry/AssetRegistryModule.h"
+#include "Blueprint/BlueprintSupport.h"
 #include "Engine/BlueprintCore.h"
 #include "Engine/BlueprintGeneratedClass.h"
 #include "Engine/Engine.h"

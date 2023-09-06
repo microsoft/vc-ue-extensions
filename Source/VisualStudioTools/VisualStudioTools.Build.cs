@@ -6,11 +6,30 @@ public class VisualStudioTools : ModuleRules
 {
     public VisualStudioTools(ReadOnlyTargetRules Target) : base(Target)
     {
-        PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
+        bool bIsCustomDevBuild = System.Environment.GetEnvironmentVariable("VSTUE_IsCustomDevBuild") == "1";
+        if (bIsCustomDevBuild)
+        {
+            // Get correct header suggestions in the IDE and validate 
+            // the plugin build without having to affect for the whole target, 
+            // which is expensive in source-builds of the engine.
+            PCHUsage = ModuleRules.PCHUsageMode.NoPCHs;
+            bUseUnity = false;
 
-        // When debugging the commandlet code, you can uncomment the line below
-        // to get proper local variable inspection and less inlined stack frames
-        // OptimizeCode = CodeOptimization.Never;
+            // When debugging the commandlet code, disable optimizations to get
+            // proper local variable inspection and less inlined stack frames
+            OptimizeCode = CodeOptimization.Never;
+
+            // Enable more restrict warnings during compilation in UE5.
+            // Required by tasks in the compliance pipeline.
+            if (Target.Version.MajorVersion >= 5)
+            {
+                UnsafeTypeCastWarningLevel = WarningLevel.Error;
+            }
+        }
+        else
+        {
+            PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
+        }
 
         // To support UE5.1+, the code is using the new FTopLevelAssetPath API
         // with a detection of support via version numbers.

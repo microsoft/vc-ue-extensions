@@ -11,6 +11,7 @@
 	"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/362651520df94e4fa65492dbcba44ae2",
 	"SupportURL": "https://developercommunity.visualstudio.com/",
 	"EnabledByDefault": true,
+	"Installed": false,
 	"bExplicitlyLoaded": true,
 	"CanContainContent": false,
 	"SupportedTargetPlatforms": [

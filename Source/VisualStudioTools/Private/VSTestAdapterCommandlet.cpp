@@ -80,8 +80,8 @@ static int32 ListTests(const FString& TargetFile)
 	}
 
 	UE_LOG(LogVisualStudioTools, Display, TEXT("Found %d tests"), TestInfos.Num());
-
 	OutFile.close();
+
 	return 0;
 }
 
@@ -182,7 +182,7 @@ UVSTestAdapterCommandlet::UVSTestAdapterCommandlet()
 	HelpParamDescriptions.Add(TEXT("[Required] The output file from running test cases that we parse to retrieve test case results."));
 
 	HelpParamNames.Add(FiltersParam);
-	HelpParamDescriptions.Add(TEXT("[Optional] List of test filters to enable separated by '+'. Default is 'smoke+product+perf+stress+negative'"));
+	HelpParamDescriptions.Add(TEXT("[Optional] List of test filters to enable separated by '+'. Default is 'application+smoke+product+perf+stress+negative'"));
 
 	HelpParamNames.Add(HelpParam);
 	HelpParamDescriptions.Add(TEXT("[Optional] Print this help message and quit the commandlet immediately."));
@@ -214,11 +214,19 @@ int32 UVSTestAdapterCommandlet::Main(const FString& Params)
 	}
 
 	// Default to all the test filters on except for engine tests.
-	uint32 filter = EAutomationTestFlags::ProductFilter | EAutomationTestFlags::SmokeFilter |
+	uint32 filter = EAutomationTestFlags::ProductFilter | EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::SmokeFilter |
 					EAutomationTestFlags::PerfFilter | EAutomationTestFlags::StressFilter | EAutomationTestFlags::NegativeFilter;
 	if (ParamVals.Contains(FiltersParam))
 	{
 		FString filters = ParamVals[FiltersParam];
+		if (filters.Contains("application"))
+		{
+			filter |= EAutomationTestFlags::ApplicationContextMask;
+		}
+		else
+		{
+			filter &= ~EAutomationTestFlags::ApplicationContextMask;
+		}
 		if (filters.Contains("smoke"))
 		{
 			filter |= EAutomationTestFlags::SmokeFilter;

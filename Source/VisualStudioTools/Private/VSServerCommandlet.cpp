@@ -3,6 +3,8 @@
 #include "VSServerCommandlet.h"
 #include "VSTestAdapterCommandlet.h"
 
+#include "Windows/AllowWindowsPlatformTypes.h"
+
 #include "HAL/PlatformNamedPipe.h"
 #include "Runtime/Core/Public/Async/TaskGraphInterfaces.h"
 #include "Runtime/Core/Public/Containers/Ticker.h"
@@ -16,6 +18,8 @@
 #include <string>
 #include <thread>
 #include <windows.h>
+
+#include "Windows/HideWindowsPlatformTypes.h"
 
 #include "VisualStudioTools.h"
 

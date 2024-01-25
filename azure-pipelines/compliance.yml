@@ -62,6 +62,16 @@ jobs:
     - task: CredScan@3
       inputs:
         scanFolder: '$(Build.SourcesDirectory)'
+    - task: APIScan@2
+      displayName: 'Run APIScan'
+      inputs:
+        softwareFolder: '$(Build.ArtifactStagingDirectory)/drop'
+        softwareName: 'Visual Studio Tools for Unreal Engine'
+        softwareVersionNum: '2.4'
+        softwareBuildNum: '$(Build.BuildId)'
+        toolVersion: 'Latest'
+      env:
+        AzureServicesAuthConnectionString: runAs=App;AppId=$(ApiScanClientId);TenantId=$(ApiScanTenant);AppKey=$(ApiScanSecret)
     - task: BinSkim@4
       inputs:
         InputType: 'Basic'

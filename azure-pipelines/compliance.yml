@@ -87,6 +87,13 @@ jobs:
         userProvideBuildInfo: auto
         rulesetName: Recommended
         setupCommandlinePicker: 'vs2022'
+    - task: PublishSecurityAnalysisLogs@3
+      displayName: 'Publish security analysis logs'
+      inputs:
+        ArtifactName: 'CodeAnalysisLogs'
+        ArtifactType: 'Container'
+        AllTools: true
+        ToolLogsNotFoundAction: 'Standard'
     - task: TSAUpload@2
       displayName: 'TSA upload'
       inputs:

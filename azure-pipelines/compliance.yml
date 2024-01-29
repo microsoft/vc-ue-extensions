@@ -32,7 +32,7 @@ jobs:
       displayName: 'Apply patch to allow us to pass linker flags to the build'
       inputs:
         script: 'git apply --ignore-whitespace $(Build.SourcesDirectory)/azure-pipelines/Support-extra-UBT-args-in-UAT.BuildPlugin.patch'
-        workingDirectory: '$(Build.SourcesDirectory)'
+        workingDirectory: '$(Agent.BuildDirectory)\ue'
     - task: PowerShell@2
       displayName: '[UE] Append /unattended option'
       inputs:

@@ -1,3 +1,7 @@
+# IMPORTANT:
+# Do not run BinSkim because we do not control producing the binaries. That process is owned by
+# Epic. We just provide source code. Since we do not control the build, BinSkim is not needed.
+
 variables:
   Codeql.Enabled: true
   Codeql.SourceRoot: '$(Build.SourcesDirectory)'
@@ -24,6 +28,11 @@ jobs:
       inputs:
         script: 'git clone "https://$(token)@github.com/EpicGames/UnrealEngine" --single-branch --branch $(ue_branch) --depth 1 ue'
         workingDirectory: '$(Agent.BuildDirectory)'
+    - task: CmdLine@2
+      displayName: 'Apply patch to allow us to pass linker flags to the build'
+      inputs:
+        script: 'git apply --ignore-whitespace $(Build.SourcesDirectory)/azure-pipelines/Support-extra-UBT-args-in-UAT.BuildPlugin.patch'
+        workingDirectory: '$(Build.SourcesDirectory)'
     - task: PowerShell@2
       displayName: '[UE] Append /unattended option'
       inputs:
@@ -41,7 +50,7 @@ jobs:
       timeoutInMinutes: 300
       inputs:
         solution: '$(Build.SourcesDirectory)/build.proj'
-        msbuildArguments: '/p:UnrealEngine=$(Agent.BuildDirectory)\ue /p:OutputPath=$(Build.ArtifactStagingDirectory)\drop'
+        msbuildArguments: '/p:UnrealEngine=$(Agent.BuildDirectory)\ue /p:OutputPath=$(Build.ArtifactStagingDirectory)\drop /p:VulkanReadyBinaries=true'
         createLogFile: true
     - task: CopyFiles@2
       displayName: 'Collect binaries to analyze'
@@ -80,12 +89,6 @@ jobs:
         toolVersion: 'Latest'
       env:
         AzureServicesAuthConnectionString: runAs=App;AppId=$(ApiScanClientId);TenantId=$(ApiScanTenant);AppKey=$(ApiScanSecret)
-    - task: BinSkim@4
-      inputs:
-        InputType: 'Basic'
-        Function: 'analyze'
-        TargetPattern: 'guardianGlob'
-        AnalyzeTargetGlob: '$(Build.ArtifactStagingDirectory)/binariesToAnalyze/**.dll'
     - task: SDLNativeRules@3
       displayName: 'Run the PREfast SDL Native Rules for MSBuild'
       env:

@@ -1,0 +1,45 @@
+From d2c553415dc34af67b744e6a4faeb8cc74472be4 Mon Sep 17 00:00:00 2001
+From: Henrique Fernandes Baggio <hebaggio@microsoft.com>
+Date: Mon, 29 Jan 2024 10:38:05 -0800
+Subject: [PATCH] Support extra UBT args in UAT.BuildPlugin
+
+Forwarding extra parameters to UBT to allow customizing the build of a plugin.
+Example: runuat.bat buildpluing -plugin=... -ubtargs="-LinkerArguments=\"/profile\""
+---
+ .../Scripts/BuildPluginCommand.Automation.cs        | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
+
+diff --git a/Engine/Source/Programs/AutomationTool/Scripts/BuildPluginCommand.Automation.cs b/Engine/Source/Programs/AutomationTool/Scripts/BuildPluginCommand.Automation.cs
+index dbae467f82f6..e8416b607c07 100644
+--- a/Engine/Source/Programs/AutomationTool/Scripts/BuildPluginCommand.Automation.cs
++++ b/Engine/Source/Programs/AutomationTool/Scripts/BuildPluginCommand.Automation.cs
+@@ -63,6 +63,9 @@ public sealed class BuildPlugin : BuildCommand
+ 		// Option for verifying that all include directive s
+ 		bool bStrictIncludes = ParseParam("StrictIncludes");
+ 
++		// Extra arguments forwarded to UBT
++		string UBTArgs = ParseParamValue("ubtargs");
++
+ 		// Make sure the packaging directory is valid
+ 		DirectoryReference PackageDir = new DirectoryReference(PackageParam);
+ 		if (PluginFile.IsUnderDirectory(PackageDir))
+@@ -117,6 +120,16 @@ public sealed class BuildPlugin : BuildCommand
+ 			AdditionalArgs.Append(" -NoPCH -NoSharedPCH -DisableUnity");
+ 		}
+ 
++		// Pass extra parameters to UBT
++		if (string.IsNullOrEmpty(UBTArgs) == false)
++		{
++			Logger.LogInformation("Building with extra UBT parameters: {UBTArgs}", UBTArgs);
++			string Arg = UBTArgs;
++			Arg = Arg.TrimStart(new char[] { '\"' });
++			Arg = Arg.TrimEnd(new char[] { '\"' });
++			AdditionalArgs.Append(' ').Append(Arg);
++		}
++
+ 		// check if any architectures were specified
+ 		foreach (UnrealTargetPlatform Platform in UnrealTargetPlatform.GetValidPlatforms())
+ 		{
+-- 
+2.43.0.windows.1
+

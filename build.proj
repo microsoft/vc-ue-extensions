@@ -9,12 +9,13 @@
         </EnginePath>
         <UATScript>$(EnginePath.Trim())\Engine\Build\BatchFiles\RunUAT.bat</UATScript>
         <UnversionedFlag Condition=" '$(Versioned)' != 'true'">-Unversioned</UnversionedFlag>
+        <AdditionalFlags Condition=" '$(VulkanReadyBinaries)' == 'true'">-ubtargs=&quot;-LinkerArguments=\&quot;/profile\&quot; &quot;</AdditionalFlags>
     </PropertyGroup>
     <Target Name="Build">
         <Error Text="Cannot locate the RunUAT.bat script at $(UATScript). Check if the $UnrealEngine property is a valid path or installed version." Condition="!Exists('$(UATScript)')"></Error>
         <MakeDir Directories="$(OutputPath)" Condition="!Exists('$(OutputPath)')" />
         <Exec 
-            Command="&quot;$(UATScript)&quot; BuildPlugin -Plugin=&quot;$(PluginFile)&quot; -TargetPlatforms=Win64 -Package=&quot;$(OutputPath)&quot; $(UnversionedFlag) -FromMsBuild" 
+            Command="&quot;$(UATScript)&quot; BuildPlugin -Plugin=&quot;$(PluginFile)&quot; -TargetPlatforms=Win64 -Package=&quot;$(OutputPath)&quot; $(AdditionalFlags) $(UnversionedFlag) -FromMsBuild" 
             EnvironmentVariables="VSTUE_IsCustomDevBuild=1"/>
     </Target>
     <Target Name="Clean" >

@@ -28,7 +28,6 @@ extends:
   parameters:
     pool:
       name: VSEngSS-MicroBuild2022-1ES
-      image: windows-2022
       os: windows
     customBuildTags:
     - ES365AIMigrationTooling

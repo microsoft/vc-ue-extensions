@@ -82,17 +82,6 @@ extends:
           inputs:
             ignoreDirectories: '$(Agent.BuildDirectory)\ue'
           displayName: 'Component Detection'
-        - task: AntiMalware@4
-          inputs:
-            InputType: 'Basic'
-            ScanType: 'CustomScan'
-            FileDirPath: '$(Build.StagingDirectory)'
-            TreatSignatureUpdateFailureAs: 'Warning'
-            SignatureFreshness: 'UpToDate'
-            TreatStaleSignatureAs: 'Error'
-        - task: CredScan@3
-          inputs:
-            scanFolder: '$(Build.SourcesDirectory)'
         - task: APIScan@2
           displayName: 'Run APIScan'
           inputs:

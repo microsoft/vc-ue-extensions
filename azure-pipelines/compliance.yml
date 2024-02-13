@@ -16,6 +16,14 @@ pr:
     - main
     - dev/*
 
+schedules:
+  - cron: "0 12 * * Sun"
+    displayName: Weekly run
+    branches:
+      include:
+        - main
+    always: true
+
 resources:
   repositories:
   - repository: 1ESPipelineTemplates

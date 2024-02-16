@@ -382,23 +382,18 @@ static void RunAssetScan(
 		});
 
 	// Take account of any core redirects for the blueprint classes we want to scan.
-	auto FilterArray = Filter.TagsAndValues.Array();
-	for (auto OneEntry : FilterArray)
+	for (const auto& BaseClass : FilterBaseClasses)
 	{
-		if (OneEntry.Value.IsSet())
+		if (BaseClass.IsValid())
 		{
-			// I don't know what this CoreUObject wrapper is, but it needs removing and then adding back to any previous name.
-			FString ClassName = OneEntry.Value.GetValue();
-			ClassName.RemoveFromStart("/Script/CoreUObject.Class'");
-			ClassName.RemoveFromEnd("'");
-
 			TArray<FCoreRedirectObjectName> PreviousNames;
-			if (FCoreRedirects::FindPreviousNames(ECoreRedirectFlags::Type_Class, ClassName, PreviousNames))
+			if (FCoreRedirects::FindPreviousNames(ECoreRedirectFlags::Type_Class, BaseClass->GetPathName(), PreviousNames))
 			{
-				for (auto PreviousName : PreviousNames)
+				for (const auto& PreviousName : PreviousNames)
 				{
+					// FString PreviousString = FObjectPropertyBase::GetExportPath(BaseClass->GetClass()->GetClassPathName(), PreviousName.ToString()); // Alternative way to add /Script/CoreUObject.Class'' wrapper - but not sure it makes sense to use the new class when referencing a previous name
 					FString PreviousString = "/Script/CoreUObject.Class'" + PreviousName.ToString() + "'";
-					Filter.TagsAndValues.Add(OneEntry.Key, PreviousString);
+					Filter.TagsAndValues.Add(FBlueprintTags::NativeParentClassPath, PreviousString);
 				}
 			}
 		}

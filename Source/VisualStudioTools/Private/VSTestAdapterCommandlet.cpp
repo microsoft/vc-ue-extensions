@@ -214,19 +214,11 @@ int32 UVSTestAdapterCommandlet::Main(const FString& Params)
 	}
 
 	// Default to all the test filters on except for engine tests.
-	uint32 filter = EAutomationTestFlags::ProductFilter | EAutomationTestFlags::ApplicationContextMask | EAutomationTestFlags::SmokeFilter |
+	uint32 filter = EAutomationTestFlags::ProductFilter | EAutomationTestFlags::SmokeFilter |
 					EAutomationTestFlags::PerfFilter | EAutomationTestFlags::StressFilter | EAutomationTestFlags::NegativeFilter;
 	if (ParamVals.Contains(FiltersParam))
 	{
 		FString filters = ParamVals[FiltersParam];
-		if (filters.Contains("application"))
-		{
-			filter |= EAutomationTestFlags::ApplicationContextMask;
-		}
-		else
-		{
-			filter &= ~EAutomationTestFlags::ApplicationContextMask;
-		}
 		if (filters.Contains("smoke"))
 		{
 			filter |= EAutomationTestFlags::SmokeFilter;

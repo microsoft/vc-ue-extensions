@@ -14,7 +14,7 @@
     ],
     "instanceUrl": "https://devdiv.visualstudio.com",
     "projectName": "DevDiv",
-    "areaPath": "DevDiv\\Cpp Developer Experience\\Apogee\\Unreal Engine integrations",
+    "areaPath": "DevDiv\\Cpp Developer Experience\\GameDev Experience\\Unreal Engine integrations",
     "iterationPath": "DevDiv",
     "alltools": true,
     "repositoryName": "vc-ue-extensions"

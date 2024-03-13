@@ -3,9 +3,13 @@
 
 #include "VisualStudioToolsCommandletBase.h"
 
+#include "Windows/AllowWindowsPlatformTypes.h"
+
 #include "HAL/FileManager.h"
 #include "Misc/Paths.h"
 #include "VisualStudioTools.h"
+
+#include "Windows/HideWindowsPlatformTypes.h"
 
 static constexpr auto HelpSwitch = TEXT("help");
 static constexpr auto OutputSwitch = TEXT("output");

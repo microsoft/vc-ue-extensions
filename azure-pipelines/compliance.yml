@@ -99,7 +99,7 @@ extends:
             softwareBuildNum: '$(Build.BuildId)'
             toolVersion: 'Latest'
           env:
-            AzureServicesAuthConnectionString: runAs=App;AppId=$(ApiScanClientId);TenantId=$(ApiScanTenant);AppKey=$(ApiScanSecret)
+            AzureServicesAuthConnectionString: runAs=App;AppId=$(ApiScanClientId)
         - task: SDLNativeRules@3
           displayName: 'Run the PREfast SDL Native Rules for MSBuild'
           env:

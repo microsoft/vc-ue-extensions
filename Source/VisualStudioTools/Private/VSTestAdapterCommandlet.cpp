@@ -213,9 +213,8 @@ int32 UVSTestAdapterCommandlet::Main(const FString& Params)
 		return 0;
 	}
 
-	// Default to all the test filters on except for engine tests.
-	uint32 filter = EAutomationTestFlags::ProductFilter | EAutomationTestFlags::SmokeFilter |
-					EAutomationTestFlags::PerfFilter | EAutomationTestFlags::StressFilter | EAutomationTestFlags::NegativeFilter;
+	// Default to all the test filters.
+	uint32 filter = EAutomationTestFlags::ProductFilter | EAutomationTestFlags::SmokeFilter | EAutomationTestFlags::PerfFilter | EAutomationTestFlags::EngineFilter;
 	if (ParamVals.Contains(FiltersParam))
 	{
 		FString filters = ParamVals[FiltersParam];
@@ -286,4 +285,4 @@ int32 UVSTestAdapterCommandlet::Main(const FString& Params)
 
 	PrintHelp();
 	return 1;
-}
+} 

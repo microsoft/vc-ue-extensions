@@ -285,4 +285,4 @@ int32 UVSTestAdapterCommandlet::Main(const FString& Params)
 
 	PrintHelp();
 	return 1;
-} 
+}

@@ -214,7 +214,7 @@ int32 UVSTestAdapterCommandlet::Main(const FString& Params)
 	}
 
 	// Default to all the test filters.
-	uint32 filter = EAutomationTestFlags::ProductFilter | EAutomationTestFlags::SmokeFilter | EAutomationTestFlags::PerfFilter | EAutomationTestFlags::EngineFilter;
+	auto filter = EAutomationTestFlags::ProductFilter | EAutomationTestFlags::SmokeFilter | EAutomationTestFlags::PerfFilter | EAutomationTestFlags::EngineFilter;
 	if (ParamVals.Contains(FiltersParam))
 	{
 		FString filters = ParamVals[FiltersParam];

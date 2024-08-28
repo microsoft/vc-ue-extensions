@@ -22,7 +22,7 @@ resources:
 
 variables:
   # MicroBuild requires TeamName to be set.
-  TeamName: C++ Cross Platform and Cloud
+  TeamName: C++ Unreal Engine
   # only test-sign for now
   SignType: test
   # This allows us to deploy to the repo.

@@ -83,6 +83,5 @@ extends:
                 isPreRelease: true
                 addChangeLog: false
                 assets: |
-                  $(OutputDirectory)\VisualStudioTools.zip
-                  $(OutputDirectory)\VisualStudioTools.zip.cat
-                  
+                   $(Agent.BuildDirectory)\out\VisualStudioTools.zip
+                   $(Agent.BuildDirectory)\out\VisualStudioTools.zip.cat

@@ -40,7 +40,7 @@ extends:
     stages:
     - stage: stage
       jobs:
-      - job: 'UnrealEngine_VisualStudioTools_Compliance'
+      - job: 'UnrealEngine_VisualStudioTools_Release'
         timeoutInMinutes: 1440
         steps:
           - task: MicroBuildSigningPlugin@4
@@ -64,56 +64,25 @@ extends:
               inputs:
                 solution: .scripts/signing/SignDetached.proj
                 msbuildArguments: /p:SignType=$(SignType) /p:BaseOutputDirectory=$(Agent.BuildDirectory)\out
-
-
-
-  # The following tasks publish to the issue-only public vcpkg-ce repo. We
-  # have a deploy key stored as a secret file in Azure Pipelines which is used
-  # to authenticate for pushing a tag and creating a release.
-  - task: DownloadSecureFile@1
-    displayName: Download deploy key
-    name: githubDeployKey
-    inputs:
-      secureFile: id_vcpkgce
-    condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags'))
-  # GitHub has a large, regularly changing set of IP address, so ignore the
-  # hostname and allow anything with the right key.
-  # https://docs.github.com/en/github/authenticating-to-github/keeping-your-account-and-data-secure/about-githubs-ip-addresses
-  # This public key should have the well-known fingerprint documented below.
-  # SHA256:nThbg6kXUpJWGl7E1IGOCspRomTxdCARLviKw6E5SY8
-  # https://docs.github.com/en/github/authenticating-to-github/keeping-your-account-and-data-secure/githubs-ssh-key-fingerprints
-  - script: mkdir %USERPROFILE%\.ssh && echo * ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==>>%USERPROFILE%\.ssh\known_hosts
-    displayName: Store GitHub public key
-    condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags'))
-  - script: git clone git@github.com:microsoft/vcpkg-ce.git
-    displayName: Clone deployment repo
-    workingDirectory: $(Pipeline.Workspace)
-    condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags'))
-  - script: git -c user.email=embeddedbot@microsoft.com -c user.name="Embedded Bot" tag -a $(TagName) -m "vcpkg-ce release $(TagName)" && git push origin $(TagName)
-    displayName: Push release tag
-    workingDirectory: $(Pipeline.Workspace)/vcpkg-ce
-    condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags'))
-  - task: GitHubRelease@0
-    displayName: Publish to public repo
-    inputs:
-      gitHubConnection: embeddedbot
-      repositoryName: microsoft/vcpkg-ce
-      action: create
-      # We don't care what commit the releases are associated with in the
-      # issue-only repo, so just use the SHA of the initial commit. The task
-      # requires this parameter, but the actual release will end up using the
-      # SHA of the tag.
-      target: 70680994ce17917a99788b794a26347c35c805c9
-      tagSource: manual
-      tag: $(TagName)
-      assets: |
-        $(OutputDirectory)\ce
-        $(OutputDirectory)\ce.ps1
-        $(OutputDirectory)\ce.cmd
-        $(OutputDirectory)\ce.tgz
-        $(OutputDirectory)\signature.cat
-        $(OutputDirectory)\ce.tgz.asc
-        $(OutputDirectory)\ce.tgz.cat
-        $(OutputDirectory)\ce.asc
-      isPreRelease: false
-    condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags'))
+            - bash: |
+                echo "##vso[task.setVariable variable=SHA1]$(git rev-parse $(TagName))"
+              displayName: Set tag commit hash
+              workingDirectory: '$(Build.SourcesDirectory)'
+            - task: GitHubRelease@0
+              displayName: Publish to public repo
+              condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags'))
+              inputs:
+                gitHubConnection: github/xilaraux
+                repositoryName: microsoft/vc-ue-extensions
+                action: create
+                target: $(SHA1)
+                tagSource: manual
+                tag: $(TagName)
+                title: $(TagName)
+                isDraft: false
+                isPreRelease: true
+                addChangeLog: false
+                assets: |
+                  $(OutputDirectory)\VisualStudioTools.zip
+                  $(OutputDirectory)\VisualStudioTools.zip.cat
+                  

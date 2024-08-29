@@ -72,18 +72,15 @@ extends:
               zipSources: true
           - task: PowerShell@2
             displayName: "Create zip excluding .git folder"
+            workingDirectory: '$(Agent.BuildDirectory)'
             inputs:
               targetType: 'inline'
               script: |
-                $sourcePath = "$(Build.SourcesDirectory)"
-                $destinationPath = "$(Agent.BuildDirectory)/out/VisualStudioTools.zip"
-                $excludePath = "$sourcePath\.git"
-
-                New-Item -Path "$(Agent.BuildDirectory)/out" -ItemType Directory
-                $filesToZip = Get-ChildItem -Path $sourcePath -Recurse -File | Where-Object { $_.FullName -notlike "$excludePath*" }
-                Compress-Archive -Path $filesToZip.FullName -DestinationPath $destinationPath -Force
+                $destinationDirectory = "$(Agent.BuildDirectory)/out"
+                New-Item -Path $destinationDirectory -ItemType Directory
+                git archive -o "$destinationDirectory/VisualStudioTools.zip" $(TagName)
           - powershell: New-FileCatalog -Path .\VisualStudioTools.zip -CatalogFilePath .\VisualStudioTools.zip.cat -CatalogVersion 2.0
-            displayName: Create standalone zip catalog
+            displayName: Create standalone catalog
             workingDirectory: '$(Agent.BuildDirectory)\out'
           - task: NuGetToolInstaller@1
             inputs:

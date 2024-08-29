@@ -81,6 +81,11 @@ extends:
             inputs:
               solution: Scripts/SignDetached.proj
               msbuildArguments: /p:SignType=$(SignType) /p:BaseOutputDirectory=$(Agent.BuildDirectory)\out
+          - task: ExtractFiles@1
+            displayName: Extract zip file
+            inputs:
+              archiveFilePatterns: '$(Agent.BuildDirectory)/out/VisualStudioTools.zip'
+              destinationFolder: '$(Agent.BuildDirectory)/out/ExtractedFiles'
           - powershell: |
               Get-ChildItem -Path $(Agent.BuildDirectory) -Recurse
             displayName: Show files

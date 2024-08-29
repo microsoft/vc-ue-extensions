@@ -31,6 +31,13 @@ resources:
     name: 1ESPipelineTemplates/1ESPipelineTemplates
     ref: refs/tags/release
 
+variables:
+  # MicroBuild requires TeamName to be set.
+  TeamName: C++ Unreal Engine
+  # only test-sign for now
+  SignType: test
+  TagName: $[replace(variables['Build.SourceBranch'], 'refs/tags/', '')]
+
 extends:
   template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
   parameters:
@@ -42,82 +49,54 @@ extends:
     stages:
     - stage: stage
       jobs:
-      - job: 'UnrealEngine_VisualStudioTools_Compliance'
+      - job: 'UnrealEngine_VisualStudioTools_Release'
         timeoutInMinutes: 1440
         steps:
-        - task: CmdLine@2
-          displayName: 'Clone Unreal Engine Repository'
-          inputs:
-            script: 'git clone "https://$(token)@github.com/EpicGames/UnrealEngine" --single-branch --branch $(ue_branch) --depth 1 ue'
-            workingDirectory: '$(Agent.BuildDirectory)'
-        - task: CmdLine@2
-          displayName: 'Apply patch to allow us to pass linker flags to the build'
-          inputs:
-            script: 'git apply --ignore-whitespace $(Build.SourcesDirectory)/azure-pipelines/Support-extra-UBT-args-in-UAT.BuildPlugin.patch'
-            workingDirectory: '$(Agent.BuildDirectory)\ue'
-        - task: PowerShell@2
-          displayName: '[UE] Append /unattended option'
-          inputs:
-            targetType: 'inline'
-            script:
-              $filePath = "$(Agent.BuildDirectory)/ue/Setup.bat";
-              (Get-Content $filePath).Replace("/register", "/register /unattended") | Set-Content $filePath
-        - task: CmdLine@2
-          displayName: '[UE] Run Setup.bat'
-          inputs:
-            script: 'ue\Setup.bat --force'
-            workingDirectory: '$(Agent.BuildDirectory)'
-        - task: MSBuild@1
-          displayName: 'Build Plugin'
-          timeoutInMinutes: 300
-          inputs:
-            solution: '$(Build.SourcesDirectory)/build.proj'
-            msbuildArguments: '/p:UnrealEngine=$(Agent.BuildDirectory)\ue /p:OutputPath=$(Build.ArtifactStagingDirectory)\drop /p:VulkanReadyBinaries=true'
-            createLogFile: true
-        - task: CopyFiles@2
-          displayName: 'Collect binaries to analyze'
-          inputs:
-            SourceFolder: '$(Build.ArtifactStagingDirectory)\drop'
-            Contents: '**\unrealeditor-visualstudiotools.*'
-            TargetFolder: '$(Build.ArtifactStagingDirectory)\binariesToAnalyze'
-            CleanTargetFolder: true
-            OverWrite: true
-        - task: PoliCheck@2
-          inputs:
-            targetType: 'F'
-            targetArgument: '$(Build.SourcesDirectory)'
-        - task: ComponentGovernanceComponentDetection@0
-          inputs:
-            ignoreDirectories: '$(Agent.BuildDirectory)\ue'
-          displayName: 'Component Detection'
-        - task: APIScan@2
-          displayName: 'Run APIScan'
-          inputs:
-            softwareFolder: '$(Build.ArtifactStagingDirectory)/binariesToAnalyze'
-            softwareName: 'Visual Studio Tools for Unreal Engine'
-            softwareVersionNum: '2.4'
-            softwareBuildNum: '$(Build.BuildId)'
-            toolVersion: 'Latest'
-          env:
-            AzureServicesAuthConnectionString: runAs=App;AppId=$(ApiScanClientId)
-        - task: SDLNativeRules@3
-          displayName: 'Run the PREfast SDL Native Rules for MSBuild'
-          env:
-            SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-          inputs:
-            publishXML: true
-            userProvideBuildInfo: auto
-            rulesetName: Recommended
-            setupCommandlinePicker: 'vs2022'
-        - task: PublishSecurityAnalysisLogs@3
-          displayName: 'Publish security analysis logs'
-          inputs:
-            ArtifactName: 'CodeAnalysisLogs'
-            ArtifactType: 'Container'
-            AllTools: true
-            ToolLogsNotFoundAction: 'Standard'
-        - task: TSAUpload@2
-          displayName: 'TSA upload'
-          inputs:
-            GdnPublishTsaOnboard: True
-            GdnPublishTsaConfigFile: '$(Build.SourcesDirectory)/azure-pipelines/TSAOptions.json'
+          - task: MicroBuildSigningPlugin@4
+            displayName: Install MicroBuild Signing
+            inputs:
+              signType: $(SignType)
+              zipSources: true
+            - task: ArchiveFiles@2
+              displayName: Create zip from source folder
+              inputs:
+                rootFolderOrFile: $(Build.SourcesDirectory)
+                includeRootFolder: false
+                archiveType: zip
+                archiveFile: $(Agent.BuildDirectory)/out/VisualStudioTools.zip
+                replaceExistingArchive: true
+            - powershell: New-FileCatalog -Path .\VisualStudioTools.zip -CatalogFilePath .\VisualStudioTools.zip.cat -CatalogVersion 2.0
+              displayName: Create standalone zip catalog
+              workingDirectory: '$(Agent.BuildDirectory)\out'
+            - task: MSBuild@1
+              displayName: Sign catalogs
+              inputs:
+                solution: Scripts/SignDetached.proj
+                msbuildArguments: /p:SignType=$(SignType) /p:BaseOutputDirectory=$(Agent.BuildDirectory)\out
+            - bash: |
+                echo "ls -lR $(Agent.BuildDirectory)"
+              displayName: Show files
+              workingDirectory: '$(Build.SourcesDirectory)'
+            
+            # Commenting for now for polishin the pipeline
+            # - bash: |
+            #     echo "##vso[task.setVariable variable=SHA1]$(git rev-parse $(TagName))"
+            #   displayName: Set tag commit hash
+            #   workingDirectory: '$(Build.SourcesDirectory)'
+            # - task: GitHubRelease@0
+            #   displayName: Publish to public repo
+            #   condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags'))
+            #   inputs:
+            #     gitHubConnection: github/xilaraux
+            #     repositoryName: microsoft/vc-ue-extensions
+            #     action: create
+            #     target: $(SHA1)
+            #     tagSource: manual
+            #     tag: $(TagName)
+            #     title: $(TagName)
+            #     isDraft: false
+            #     isPreRelease: true
+            #     addChangeLog: false
+            #     assets: |
+            #        $(Agent.BuildDirectory)\out\VisualStudioTools.zip
+            #        $(Agent.BuildDirectory)\out\VisualStudioTools.zip.cat

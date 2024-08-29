@@ -75,7 +75,7 @@ extends:
               command: 'restore'
               restoreSolution: 'Scripts/SignDetached.proj'
               feedsToUse: 'config'
-              restoreDirectory: '$(Build.SourcesDirectory)\packages'
+              restoreDirectory: '$(Build.SourcesDirectory)\Scripts\packages'
           - task: MSBuild@1
             displayName: Sign catalogs
             inputs:

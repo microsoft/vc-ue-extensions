@@ -66,6 +66,13 @@ extends:
           - powershell: New-FileCatalog -Path .\VisualStudioTools.zip -CatalogFilePath .\VisualStudioTools.zip.cat -CatalogVersion 2.0
             displayName: Create standalone zip catalog
             workingDirectory: '$(Agent.BuildDirectory)\out'
+           - task: NuGetCommand@2
+            displayName: 'NuGet Restore MicroBuild Signing Extension'
+            inputs:
+              command: 'restore'
+              restoreSolution: 'Scripts/SignDetached.proj'
+              feedsToUse: 'config'
+              restoreDirectory: '$(Build.SourcesDirectory)\packages'
           - task: MSBuild@1
             displayName: Sign catalogs
             inputs:

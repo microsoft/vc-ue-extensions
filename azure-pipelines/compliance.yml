@@ -81,11 +81,11 @@ extends:
             inputs:
               solution: Scripts/SignDetached.proj
               msbuildArguments: /p:SignType=$(SignType) /p:BaseOutputDirectory=$(Agent.BuildDirectory)\out
-          - bash: |
-              echo "ls -lR $(Agent.BuildDirectory)"
+          - powershell: |
+              Get-ChildItem -Path $(Agent.BuildDirectory) -Recurse
             displayName: Show files
             workingDirectory: '$(Build.SourcesDirectory)'
-          
+
             # Commenting for now for polishin the pipeline
             # - bash: |
             #     echo "##vso[task.setVariable variable=SHA1]$(git rev-parse $(TagName))"

@@ -90,6 +90,16 @@ extends:
               Get-ChildItem -Path $(Agent.BuildDirectory) -Recurse
             displayName: Show files
             workingDirectory: '$(Build.SourcesDirectory)'
+          - task: PublishPipelineArtifact@1
+            displayName: Publish VisualStudioTools.zip Artifact
+            inputs:
+              path: '$(Agent.BuildDirectory)/out/VisualStudioTools.zip'
+              artifactName: VisualStudioTools.zip
+          - task: PublishPipelineArtifact@1
+            displayName: Publish VisualStudioTools.zip.cat Artifact
+            inputs:
+              path: '$(Agent.BuildDirectory)/out/VisualStudioTools.zip.cat'
+              artifactName: VisualStudioTools.zip.cat
 
             # Commenting for now for polishin the pipeline
             # - bash: |

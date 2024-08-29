@@ -70,14 +70,20 @@ extends:
             inputs:
               signType: $(SignType)
               zipSources: true
-          - task: ArchiveFiles@2
-            displayName: Create zip from source folder
+          - task: PowerShell@2
+            displayName: "Create zip excluding .git folder"
             inputs:
-              rootFolderOrFile: $(Build.SourcesDirectory)
-              includeRootFolder: false
-              archiveType: zip
-              archiveFile: $(Agent.BuildDirectory)/out/VisualStudioTools.zip
-              replaceExistingArchive: true
+              targetType: 'inline'
+              script: |
+                $sourcePath = "$(Build.SourcesDirectory)"
+                $destinationPath = "$(Agent.BuildDirectory)/out/VisualStudioTools.zip"
+                $excludePath = "$sourcePath\.git"
+                
+                # Get all files except those in the .git folder
+                $filesToZip = Get-ChildItem -Path $sourcePath -Recurse -File | Where-Object { $_.FullName -notlike "$excludePath*" }
+                
+                # Create the zip file
+                Compress-Archive -Path $filesToZip.FullName -DestinationPath $destinationPath -Force
           - powershell: New-FileCatalog -Path .\VisualStudioTools.zip -CatalogFilePath .\VisualStudioTools.zip.cat -CatalogVersion 2.0
             displayName: Create standalone zip catalog
             workingDirectory: '$(Agent.BuildDirectory)\out'

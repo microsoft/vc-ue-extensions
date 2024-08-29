@@ -5,6 +5,11 @@
 variables:
   Codeql.Enabled: true
   Codeql.SourceRoot: '$(Build.SourcesDirectory)'
+  # MicroBuild requires TeamName to be set.
+  TeamName: C++ Unreal Engine
+  # only test-sign for now
+  SignType: test
+  TagName: $[replace(variables['Build.SourceBranch'], 'refs/tags/', '')]
 
 trigger:
 - main
@@ -31,13 +36,6 @@ resources:
     name: 1ESPipelineTemplates/1ESPipelineTemplates
     ref: refs/tags/release
 
-variables:
-  # MicroBuild requires TeamName to be set.
-  TeamName: C++ Unreal Engine
-  # only test-sign for now
-  SignType: test
-  TagName: $[replace(variables['Build.SourceBranch'], 'refs/tags/', '')]
-
 extends:
   template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
   parameters:
@@ -57,27 +55,27 @@ extends:
             inputs:
               signType: $(SignType)
               zipSources: true
-            - task: ArchiveFiles@2
-              displayName: Create zip from source folder
-              inputs:
-                rootFolderOrFile: $(Build.SourcesDirectory)
-                includeRootFolder: false
-                archiveType: zip
-                archiveFile: $(Agent.BuildDirectory)/out/VisualStudioTools.zip
-                replaceExistingArchive: true
-            - powershell: New-FileCatalog -Path .\VisualStudioTools.zip -CatalogFilePath .\VisualStudioTools.zip.cat -CatalogVersion 2.0
-              displayName: Create standalone zip catalog
-              workingDirectory: '$(Agent.BuildDirectory)\out'
-            - task: MSBuild@1
-              displayName: Sign catalogs
-              inputs:
-                solution: Scripts/SignDetached.proj
-                msbuildArguments: /p:SignType=$(SignType) /p:BaseOutputDirectory=$(Agent.BuildDirectory)\out
-            - bash: |
-                echo "ls -lR $(Agent.BuildDirectory)"
-              displayName: Show files
-              workingDirectory: '$(Build.SourcesDirectory)'
-            
+          - task: ArchiveFiles@2
+            displayName: Create zip from source folder
+            inputs:
+              rootFolderOrFile: $(Build.SourcesDirectory)
+              includeRootFolder: false
+              archiveType: zip
+              archiveFile: $(Agent.BuildDirectory)/out/VisualStudioTools.zip
+              replaceExistingArchive: true
+          - powershell: New-FileCatalog -Path .\VisualStudioTools.zip -CatalogFilePath .\VisualStudioTools.zip.cat -CatalogVersion 2.0
+            displayName: Create standalone zip catalog
+            workingDirectory: '$(Agent.BuildDirectory)\out'
+          - task: MSBuild@1
+            displayName: Sign catalogs
+            inputs:
+              solution: Scripts/SignDetached.proj
+              msbuildArguments: /p:SignType=$(SignType) /p:BaseOutputDirectory=$(Agent.BuildDirectory)\out
+          - bash: |
+              echo "ls -lR $(Agent.BuildDirectory)"
+            displayName: Show files
+            workingDirectory: '$(Build.SourcesDirectory)'
+          
             # Commenting for now for polishin the pipeline
             # - bash: |
             #     echo "##vso[task.setVariable variable=SHA1]$(git rev-parse $(TagName))"

@@ -60,7 +60,7 @@ extends:
             - task: MSBuild@1
               displayName: Sign catalogs
               inputs:
-                solution: .scripts/signing/SignDetached.proj
+                solution: Scripts/SignDetached.proj
                 msbuildArguments: /p:SignType=$(SignType) /p:BaseOutputDirectory=$(Agent.BuildDirectory)\out
             - bash: |
                 echo "##vso[task.setVariable variable=SHA1]$(git rev-parse $(TagName))"

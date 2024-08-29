@@ -49,6 +49,21 @@ extends:
       jobs:
       - job: 'UnrealEngine_VisualStudioTools_Release'
         timeoutInMinutes: 1440
+        templateContext:
+          outputParentDirectory: $(Agent.BuildDirectory)/out/
+          outputs:
+          - output: pipelineArtifact
+            displayName: 'Publish zip'
+            targetPath: $(Agent.BuildDirectory)/out/VisualStudioTools.zip
+            artifactName: VisualStudioTools.zip
+            artifactType: container
+            sbomEnabled: false
+          - output: pipelineArtifact
+            displayName: 'Publish cat'
+            targetPath: $(Agent.BuildDirectory)/out/VisualStudioTools.zip.cat
+            artifactName: VisualStudioTools.zip.cat
+            artifactType: container
+            sbomEnabled: false
         steps:
           - task: MicroBuildSigningPlugin@4
             displayName: Install MicroBuild Signing
@@ -90,16 +105,6 @@ extends:
               Get-ChildItem -Path $(Agent.BuildDirectory) -Recurse
             displayName: Show files
             workingDirectory: '$(Build.SourcesDirectory)'
-          - task: PublishPipelineArtifact@1
-            displayName: Publish VisualStudioTools.zip Artifact
-            inputs:
-              path: '$(Agent.BuildDirectory)/out/VisualStudioTools.zip'
-              artifactName: VisualStudioTools.zip
-          - task: PublishPipelineArtifact@1
-            displayName: Publish VisualStudioTools.zip.cat Artifact
-            inputs:
-              path: '$(Agent.BuildDirectory)/out/VisualStudioTools.zip.cat'
-              artifactName: VisualStudioTools.zip.cat
 
             # Commenting for now for polishin the pipeline
             # - bash: |

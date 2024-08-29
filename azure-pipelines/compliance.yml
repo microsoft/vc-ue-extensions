@@ -72,7 +72,6 @@ extends:
               zipSources: true
           - task: PowerShell@2
             displayName: "Create zip excluding .git folder"
-            workingDirectory: '$(Agent.BuildDirectory)'
             inputs:
               targetType: 'inline'
               script: |

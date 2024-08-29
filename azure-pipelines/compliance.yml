@@ -65,6 +65,10 @@ extends:
             artifactType: container
             sbomEnabled: false
         steps:
+          - powershell: |
+              Write-Host "##vso[task.setVariable variable=SHA1]$(git rev-parse $(TagName))"
+            displayName: Save tag commit hash
+            workingDirectory: '$(Agent.BuildDirectory)'
           - task: MicroBuildSigningPlugin@4
             displayName: Install MicroBuild Signing
             inputs:
@@ -77,7 +81,7 @@ extends:
               script: |
                 $destinationDirectory = "$(Agent.BuildDirectory)/out"
                 New-Item -Path $destinationDirectory -ItemType Directory
-                git archive -o "$destinationDirectory/VisualStudioTools.zip" $(TagName)
+                git archive -o "$destinationDirectory/VisualStudioTools.zip" $(SHA1)
           - powershell: New-FileCatalog -Path .\VisualStudioTools.zip -CatalogFilePath .\VisualStudioTools.zip.cat -CatalogVersion 2.0
             displayName: Create standalone catalog
             workingDirectory: '$(Agent.BuildDirectory)\out'
@@ -107,10 +111,6 @@ extends:
             workingDirectory: '$(Build.SourcesDirectory)'
 
             # Commenting for now for polishin the pipeline
-            # - bash: |
-            #     echo "##vso[task.setVariable variable=SHA1]$(git rev-parse $(TagName))"
-            #   displayName: Set tag commit hash
-            #   workingDirectory: '$(Build.SourcesDirectory)'
             # - task: GitHubRelease@0
             #   displayName: Publish to public repo
             #   condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags'))

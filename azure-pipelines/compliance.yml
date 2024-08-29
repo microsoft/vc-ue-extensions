@@ -68,7 +68,7 @@ extends:
           - powershell: |
               Write-Host "##vso[task.setVariable variable=SHA1]$(git rev-parse $(TagName))"
             displayName: Save tag commit hash
-            workingDirectory: '$(Agent.BuildDirectory)'
+            workingDirectory: '$(Build.SourcesDirectory)'
           - task: MicroBuildSigningPlugin@4
             displayName: Install MicroBuild Signing
             inputs:

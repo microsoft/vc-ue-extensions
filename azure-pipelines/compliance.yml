@@ -9,7 +9,7 @@ variables:
   TeamName: C++ Unreal Engine
   # only test-sign for now
   SignType: test
-  TagName: $[replace(variables['Build.SourceBranch'], 'refs/tags/', '')]
+  TagName: HEAD # $[replace(variables['Build.SourceBranch'], 'refs/tags/', '')]
 
 trigger:
 - main

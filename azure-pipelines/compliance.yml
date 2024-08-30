@@ -104,14 +104,14 @@ extends:
             displayName: Pre-release to public repo
             # condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags'))
             inputs:
-              gitHubConnection: $(token)
+              gitHubConnection: GitHub-VSCodeExtensions
               repositoryName: microsoft/vc-ue-extensions
               action: create
               target: $(SHA1)
               tagSource: manual
               tag: $(TagName)
               title: $(TagName)
-              isDraft: false
+              isDraft: true
               isPreRelease: true
               addChangeLog: false
               assets: |

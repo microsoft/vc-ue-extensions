@@ -9,7 +9,7 @@ variables:
   TeamName: C++ Unreal Engine
   # only test-sign for now
   SignType: test
-  TagName: HEAD # $[replace(variables['Build.SourceBranch'], 'refs/tags/', '')]
+  TagName: $[replace(variables['Build.SourceBranch'], 'refs/tags/', '')]
 
 trigger:
 - main
@@ -66,7 +66,7 @@ extends:
             sbomEnabled: false
         steps:
           - powershell: |
-              Write-Host "##vso[task.setVariable variable=SHA1]$(git rev-parse $(TagName))"
+              Write-Host "##vso[task.setVariable variable=SHA1]$(git rev-parse HEAD)"
             displayName: Save tag commit hash
             workingDirectory: '$(Build.SourcesDirectory)'
           - task: MicroBuildSigningPlugin@4

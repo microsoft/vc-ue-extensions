@@ -108,12 +108,11 @@ extends:
               repositoryName: microsoft/vc-ue-extensions
               action: create
               target: $(SHA1)
-              tagSource: manual
+              tagSource: gitTag
               tag: $(TagName)
               title: $(TagName)
               isDraft: true
               isPreRelease: true
-              addChangeLog: false
               assets: |
                   $(Agent.BuildDirectory)\out\VisualStudioTools.zip
                   $(Agent.BuildDirectory)\out\VisualStudioTools.zip.cat

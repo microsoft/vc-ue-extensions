@@ -2,6 +2,14 @@
 # Do not run BinSkim because we do not control producing the binaries. That process is owned by
 # Epic. We just provide source code. Since we do not control the build, BinSkim is not needed.
 
+variables:
+  # MicroBuild requires TeamName to be set.
+  TeamName: C++ Unreal Engine
+  # only test-sign for now
+  SignType: test
+  # TagName: $[replace(variables['Build.SourceBranch'], 'refs/tags/', '')]
+
+# Manual trigger for now
 trigger: none
 pr: none
 
@@ -11,13 +19,6 @@ resources:
     type: git
     name: 1ESPipelineTemplates/1ESPipelineTemplates
     ref: refs/tags/release
-
-variables:
-  # MicroBuild requires TeamName to be set.
-  TeamName: C++ Unreal Engine
-  # only test-sign for now
-  SignType: test
-  TagName: $[replace(variables['Build.SourceBranch'], 'refs/tags/', '')]
 
 extends:
   template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
@@ -32,52 +33,65 @@ extends:
       jobs:
       - job: 'UnrealEngine_VisualStudioTools_Release'
         timeoutInMinutes: 1440
+        templateContext:
+          outputParentDirectory: $(Agent.BuildDirectory)/out/
+          outputs:
+          - output: pipelineArtifact
+            displayName: 'Publish signed plugin files'
+            targetPath: $(Agent.BuildDirectory)/out
+            artifactName: SignedPlugin
+            artifactType: container
+            sbomEnabled: false
         steps:
+          - powershell: |
+              Write-Host "##vso[task.setVariable variable=SHA1]$(git rev-parse HEAD)"
+            displayName: Save tag commit hash
+            workingDirectory: '$(Build.SourcesDirectory)'
           - task: MicroBuildSigningPlugin@4
             displayName: Install MicroBuild Signing
             inputs:
               signType: $(SignType)
               zipSources: true
-            - task: ArchiveFiles@2
-              displayName: Create zip from source folder
-              inputs:
-                rootFolderOrFile: $(Build.SourcesDirectory)
-                includeRootFolder: false
-                archiveType: zip
-                archiveFile: $(Agent.BuildDirectory)/out/VisualStudioTools.zip
-                replaceExistingArchive: true
-            - powershell: New-FileCatalog -Path .\VisualStudioTools.zip -CatalogFilePath .\VisualStudioTools.zip.cat -CatalogVersion 2.0
-              displayName: Create standalone zip catalog
-              workingDirectory: '$(Agent.BuildDirectory)\out'
-            - task: MSBuild@1
-              displayName: Sign catalogs
-              inputs:
-                solution: Scripts/SignDetached.proj
-                msbuildArguments: /p:SignType=$(SignType) /p:BaseOutputDirectory=$(Agent.BuildDirectory)\out
-            - bash: |
-                echo "ls -lR $(Agent.BuildDirectory)"
-              displayName: Show files
-              workingDirectory: '$(Build.SourcesDirectory)'
-            
-            # Commenting for now for polishin the pipeline
-            # - bash: |
-            #     echo "##vso[task.setVariable variable=SHA1]$(git rev-parse $(TagName))"
-            #   displayName: Set tag commit hash
-            #   workingDirectory: '$(Build.SourcesDirectory)'
-            # - task: GitHubRelease@0
-            #   displayName: Publish to public repo
-            #   condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags'))
-            #   inputs:
-            #     gitHubConnection: github/xilaraux
-            #     repositoryName: microsoft/vc-ue-extensions
-            #     action: create
-            #     target: $(SHA1)
-            #     tagSource: manual
-            #     tag: $(TagName)
-            #     title: $(TagName)
-            #     isDraft: false
-            #     isPreRelease: true
-            #     addChangeLog: false
-            #     assets: |
-            #        $(Agent.BuildDirectory)\out\VisualStudioTools.zip
-            #        $(Agent.BuildDirectory)\out\VisualStudioTools.zip.cat
+          - task: PowerShell@2
+            displayName: "Create zip excluding .git folder"
+            inputs:
+              targetType: 'inline'
+              script: |
+                $destinationDirectory = "$(Agent.BuildDirectory)/out"
+                New-Item -Path $destinationDirectory -ItemType Directory
+                git archive -o "$destinationDirectory/VisualStudioTools.zip" $(SHA1)
+          - powershell: New-FileCatalog -Path .\VisualStudioTools.zip -CatalogFilePath .\VisualStudioTools.zip.cat -CatalogVersion 2.0
+            displayName: Create standalone catalog
+            workingDirectory: '$(Agent.BuildDirectory)\out'
+          - task: NuGetToolInstaller@1
+            inputs:
+              versionSpec: 5.7
+          - task: NuGetCommand@2
+            displayName: 'NuGet Restore MicroBuild Signing Extension'
+            inputs:
+              command: 'restore'
+              restoreSolution: 'Scripts/SignDetached.proj'
+              feedsToUse: 'config'
+              restoreDirectory: '$(Build.SourcesDirectory)\Scripts\packages'
+          - task: MSBuild@1
+            displayName: Sign catalogs
+            inputs:
+              solution: Scripts/SignDetached.proj
+              msbuildArguments: /p:SignType=$(SignType) /p:BaseOutputDirectory=$(Agent.BuildDirectory)\out
+          # === Disabled for now in favor of uploading the artifacts to the pipeline ===
+          # - task: GitHubRelease@1
+          #   displayName: Pre-release to public repo
+          #   condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags'))
+          #   inputs:
+          #     gitHubConnection: GitHub-VSCodeExtensions
+          #     repositoryName: microsoft/vc-ue-extensions
+          #     action: create
+          #     target: $(SHA1)
+          #     tagSource: gitTag
+          #     tag: $(TagName)
+          #     title: $(TagName)
+          #     isDraft: true
+          #     isPreRelease: true
+          #     assets: |
+          #         $(Agent.BuildDirectory)\out\VisualStudioTools.zip
+          #         $(Agent.BuildDirectory)\out\VisualStudioTools.zip.cat

@@ -66,7 +66,7 @@ extends:
             sbomEnabled: false
         steps:
           - powershell: |
-              Write-Host "##vso[task.setVariable variable=SHA1]$(git rev-parse HEAD)"
+              Write-Host "##vso[task.setVariable variable=SHA1]$(git rev-parse $(TagName))"
             displayName: Save tag commit hash
             workingDirectory: '$(Build.SourcesDirectory)'
           - task: MicroBuildSigningPlugin@4
@@ -100,31 +100,20 @@ extends:
             inputs:
               solution: Scripts/SignDetached.proj
               msbuildArguments: /p:SignType=$(SignType) /p:BaseOutputDirectory=$(Agent.BuildDirectory)\out
-          - task: ExtractFiles@1
-            displayName: Extract zip file
+          - task: GitHubRelease@1
+            displayName: Pre-release to public repo
+            condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags'))
             inputs:
-              archiveFilePatterns: '$(Agent.BuildDirectory)/out/VisualStudioTools.zip'
-              destinationFolder: '$(Agent.BuildDirectory)/out/ExtractedFiles'
-          - powershell: |
-              Get-ChildItem -Path $(Agent.BuildDirectory) -Recurse
-            displayName: Show files
-            workingDirectory: '$(Build.SourcesDirectory)'
-
-            # Commenting for now for polishin the pipeline
-            # - task: GitHubRelease@0
-            #   displayName: Publish to public repo
-            #   condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags'))
-            #   inputs:
-            #     gitHubConnection: github/xilaraux
-            #     repositoryName: microsoft/vc-ue-extensions
-            #     action: create
-            #     target: $(SHA1)
-            #     tagSource: manual
-            #     tag: $(TagName)
-            #     title: $(TagName)
-            #     isDraft: false
-            #     isPreRelease: true
-            #     addChangeLog: false
-            #     assets: |
-            #        $(Agent.BuildDirectory)\out\VisualStudioTools.zip
-            #        $(Agent.BuildDirectory)\out\VisualStudioTools.zip.cat
+              gitHubConnection: github/xilaraux
+              repositoryName: microsoft/vc-ue-extensions
+              action: create
+              target: $(SHA1)
+              tagSource: manual
+              tag: $(TagName)
+              title: $(TagName)
+              isDraft: false
+              isPreRelease: true
+              addChangeLog: false
+              assets: |
+                  $(Agent.BuildDirectory)\out\VisualStudioTools.zip
+                  $(Agent.BuildDirectory)\out\VisualStudioTools.zip.cat

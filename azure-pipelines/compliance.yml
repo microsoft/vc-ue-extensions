@@ -54,14 +54,8 @@ extends:
           outputs:
           - output: pipelineArtifact
             displayName: 'Publish zip'
-            targetPath: $(Agent.BuildDirectory)/out/VisualStudioTools.zip
-            artifactName: VisualStudioTools.zip
-            artifactType: container
-            sbomEnabled: false
-          - output: pipelineArtifact
-            displayName: 'Publish cat'
-            targetPath: $(Agent.BuildDirectory)/out/VisualStudioTools.zip.cat
-            artifactName: VisualStudioTools.zip.cat
+            targetPath: $(Agent.BuildDirectory)/out
+            artifactName: SignedPlugin
             artifactType: container
             sbomEnabled: false
         steps:
@@ -100,19 +94,20 @@ extends:
             inputs:
               solution: Scripts/SignDetached.proj
               msbuildArguments: /p:SignType=$(SignType) /p:BaseOutputDirectory=$(Agent.BuildDirectory)\out
-          - task: GitHubRelease@1
-            displayName: Pre-release to public repo
-            # condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags'))
-            inputs:
-              gitHubConnection: GitHub-VSCodeExtensions
-              repositoryName: microsoft/vc-ue-extensions
-              action: create
-              target: $(SHA1)
-              tagSource: gitTag
-              tag: $(TagName)
-              title: $(TagName)
-              isDraft: true
-              isPreRelease: true
-              assets: |
-                  $(Agent.BuildDirectory)\out\VisualStudioTools.zip
-                  $(Agent.BuildDirectory)\out\VisualStudioTools.zip.cat
+          # === Disabled for now in favor of uploading the artifacts to the pipeline ===
+          # - task: GitHubRelease@1
+          #   displayName: Pre-release to public repo
+          #   condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags'))
+          #   inputs:
+          #     gitHubConnection: GitHub-VSCodeExtensions
+          #     repositoryName: microsoft/vc-ue-extensions
+          #     action: create
+          #     target: $(SHA1)
+          #     tagSource: gitTag
+          #     tag: $(TagName)
+          #     title: $(TagName)
+          #     isDraft: true
+          #     isPreRelease: true
+          #     assets: |
+          #         $(Agent.BuildDirectory)\out\VisualStudioTools.zip
+          #         $(Agent.BuildDirectory)\out\VisualStudioTools.zip.cat

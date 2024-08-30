@@ -102,7 +102,7 @@ extends:
               msbuildArguments: /p:SignType=$(SignType) /p:BaseOutputDirectory=$(Agent.BuildDirectory)\out
           - task: GitHubRelease@1
             displayName: Pre-release to public repo
-            condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags'))
+            # condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags'))
             inputs:
               gitHubConnection: $(token)
               repositoryName: microsoft/vc-ue-extensions

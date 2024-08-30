@@ -104,7 +104,7 @@ extends:
             displayName: Pre-release to public repo
             condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags'))
             inputs:
-              gitHubConnection: github/xilaraux
+              gitHubConnection: $(token)
               repositoryName: microsoft/vc-ue-extensions
               action: create
               target: $(SHA1)

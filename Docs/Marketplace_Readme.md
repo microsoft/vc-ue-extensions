@@ -36,8 +36,8 @@ Test discovery in Visual Studio 2022
 1. Begin by installing and enabling the `Visual Studio Tools for Unreal Engine` plugin.
 2. Open your solution in Visual Studio.
 3. Click on the Test Explorer to show a pop-up that will display available tests. (figure 3).
-5. You can find the logs from the plugin execution in the Tests Output Window.
-6. To refresh your filters for test discovery, you can select the "Options > Unreal Engine > Test Adapter" option under the "Tests" menu. (figure 4)
+4. You can find the logs from the plugin execution in the Tests Output Window.
+5. To refresh your filters for test discovery, you can select the "Options > Unreal Engine > Test Adapter" option under the "Tests" menu. (figure 4)
 
 ![figure 2](./images/configuration_page.png) \
 *Figure 2 - Unreal Engine project Configuration Page

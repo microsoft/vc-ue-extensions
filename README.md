@@ -29,7 +29,8 @@ The most straightforward way to use the plugin is to clone the repo under the `P
    ```powershell
    msbuild -p:UnrealEngine=<AbsolutePathToEngine>
    ```
-   Note: `<AbsolutePathToEngine>` can be path to source code folder of the engine or the one installed by `Epic Games Launcher` (e.g `C:\Program Files\Epic Games\UE_5.4`)
+   Note#1: `<AbsolutePathToEngine>` can be path to source code folder of the engine or the one installed by `Epic Games Launcher` (e.g `C:\Program Files\Epic Games\UE_5.4`)
+   Note#2: Alternatevly you can follow [Unreal Engine building plugins](https://dev.epicgames.com/community/learning/tutorials/qz93/unreal-engine-building-plugins) guide.
 
 3. Clone built plugin.
 

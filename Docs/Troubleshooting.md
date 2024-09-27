@@ -2,9 +2,9 @@
 
 This document describes some of the errors that might happen in the integration with the Unreal Engine and potential ways to mitigate them.
 
-The integration works by Visual Studio being able to invoke the VisualStudioTools plugin using the Unreal Editor executable in commandlet mode. That means the following must be true:
+The integration works by Visual Studio being able to invoke the `VisualStudioTools` plugin using the Unreal Editor executable in commandlet mode. That means the following must be true:
 
-- The `IDE support for Unreal Engine` component from Visual Studio must be installed. You can find it under the "Game Development with C++" workload in the VS Installer.
+- The `Visual Studio Tools for Unreal Engine` component from Visual Studio must be installed. You can find it under the "Game Development with C++" workload in the VS Installer.
 - The game project must be built in a Editor target (e.g., `"Development_Editor"`).
 - The `VisualStudioTools` plugin must be enabled for the project, either explicitly in the .uproject descriptor file or be enabled by default to all projects if installed at the as an engine plugin (via the `"EnabledByDefault=true"` entry in the .uplugin file).
 - Starting on version 17.5, Visual Studio will wait to scan the game project until a file with the `UCLASS/UPROPERTY/UFUNCTION` macros is opened and the Code Lens hints are requested.

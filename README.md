@@ -1,6 +1,6 @@
 # Unreal Engine plugin for Visual Studio
 
-This project contains an Unreal Editor plugin that works in conjunction with Visual Studio to display information about Blueprints assets in C++ code. 
+This project contains an Unreal Editor plugin that works in conjunction with Visual Studio to help discover and run tests in C++ code. 
 
 The plugin can be installed in either the Engine or Game project sources, and it is automatically activated when an Unreal Engine project is opened in Visual Studio.
 
@@ -8,11 +8,11 @@ The plugin can be installed in either the Engine or Game project sources, and it
 
 Before you begin, please make sure you have the following software and tools set up:
 
-1. Visual Studio 2022 has the "IDE features for Unreal Engine" component installed.
+1. Visual Studio 2022 has the "Visual Studio Tools for Unreal Engine" component installed.
    1. The component can be found in the "Game development with C++" workload or as an individual component.
 2. Unreal Engine, either installed or built from source.
    1. To learn how to install or build Unreal Engine, please refer to the following guide: [Installing Unreal Engine](https://docs.unrealengine.com/5.0/en-US/installing-unreal-engine).
-   1. The source code and instructions have been tested on Unreal Engine versions 4.27, 5.0 and 5.1.
+   1. The source code and instructions have been tested on Unreal Engine versions 4.27 and 5.0+.
 
 ## Building and Installing the Plugin
 
@@ -20,23 +20,42 @@ Before you begin, please make sure you have the following software and tools set
 
 The most straightforward way to use the plugin is to clone the repo under the `Plugins` folder of your game project or engine source. If you have multiple projects in the same Visual Studio solution, it is recommended to install the plugin at the engine level and share the binaries across the projects.
 
-1. Clone the repo under the project plugin folder by using the following commands:
-
+1. Clone the repo by using the following commands:
    ```powershell
-   cd <Project or Engine root folder>/Plugins
    git clone https://github.com/microsoft/vc-ue-extensions.git
    ```
 
+2. Build the plugin from source:
+   ```powershell
+   msbuild -p:UnrealEngine=<AbsolutePathToEngine>
+   ```
+   Note#1: `<AbsolutePathToEngine>` can be path to source code folder of the engine or the one installed by `Epic Games Launcher` (e.g `C:\Program Files\Epic Games\UE_5.4`)
+   Note#2: Alternatevly you can follow [Unreal Engine building plugins](https://dev.epicgames.com/community/learning/tutorials/qz93/unreal-engine-building-plugins) guide.
+
+3. Clone built plugin.
+
+   3.1. To Project folder:
+   ```powershell
+   move-item -path ./bin -destination <ProjectRoot>\Plugins\VisualStudioTools
+   ``` 
+   Note: You have to create `Plugins` folder in the root of the game project if it doens't exisist yet.
+
+   3.2. To Engine folder:
+   ```powershell
+   move-item -path ./bin -destination <AbsolutePathToEngine\Engine\Plugins
+   ```
+
 2. Optional: Regenerate the Solution for your game project so that the plugin source will be visible in Visual Studio.
+
 3. Rebuild the game project, which will also build the plugin.
 
-After completing these steps, Visual Studio should automatically recognize the plugin when you open a solution or project, and it will start processing Blueprints in your game.
+After completing these steps, Visual Studio should automatically recognize the plugin when you open a solution or project, and it will start processing tests in your game.
 
-You can also use the option `Rescan UE Blueprints for <Game Project Name>` in the `Project` menu to manually force Visual Studio to invoke the the plugin.
+You can also use the option `Run All Tests` in the `Tests` menu to manually force Visual Studio to invoke the the plugin.
 
 ### Cloning outside of engine or project sources
 
-If you prefer to have the plugin's repository located separately from the engine or project sources (for example, if you want to share it between multiple engines), you can follow the instructions provided in the file [Scripts/README.md](Scripts/README.md) to learn how to build and install the plugin in such a scenario.
+If you prefer to have the plugin's repository located separately from the engine or project sources (for example, if you want to share it between multiple engines), you can follow the instructions provided in the file [Building and Installing the Plugin](./README.md#building-and-installing-the-plugin) to learn how to build and install the plugin in such a scenario.
 
 ## Enabling the Plugin (Optional)
 

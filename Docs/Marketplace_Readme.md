@@ -6,7 +6,7 @@ Visual Studio Integration Tool is an Unreal Engine plugin that works in conjunct
 
 ### Visual Studio
 
-The tool requires the `IDE support for Unreal Engine` component from Visual Studio to be installed. You can find it under the "Game development with C++" workload in the Visual Studio Installer (figure 1).
+The tool requires the `Visual Studio Tools for Unreal Engine` component from Visual Studio to be installed. You can find it under the "Game development with C++" workload in the Visual Studio Installer (figure 1).
 
 ![figure 1](./images/ide_support_ue.png) \
 *Figure 1 - Installing the Visual Studio component*
@@ -31,22 +31,22 @@ The tool requires the `IDE support for Unreal Engine` component from Visual Stud
 
 ## Usage
 
-Blueprints Integration in Visual Studio 2022
+Test discovery in Visual Studio 2022
 
-1. Begin by installing and enabling the Blueprints Integration plugin.
+1. Begin by installing and enabling the `Visual Studio Tools for Unreal Engine` plugin.
 2. Open your solution in Visual Studio.
-3. You should now be able to see [Code Lens hints][codelens] with Blueprints references when opening files that contain `UCLASS` macros.
-4. Click on the Code Lens to show a pop-up that will display your Blueprint information. (figure 1)
-5. You can find the logs from the plugin execution in the Output Window.
-6. To refresh your blueprint information in the IDE, you can select the "Rescan UE Blueprint for \<project\>" option under the “Project” menu. (figure 2)
+3. Click on the Test Explorer to show a pop-up that will display available tests. (figure 3).
+4. You can find the logs from the plugin execution in the Tests Output Window.
+5. To refresh your filters for test discovery, you can select the "Options > Unreal Engine > Test Adapter" option under the "Tests" menu. (figure 4)
 
-![figure 2](./images/codelens.png) \
-*Figure 2 - Code Lens showing blueprints that derive from a UEClass*
+![figure 2](./images/configuration_page.png) \
+*Figure 2 - Unreal Engine project Configuration Page
 
-![figure 3](./images/bp_rescan.png) \
+![figure 3](./images/test_explorer.png) \
 *Figure 3 - Menu to rescan the blueprint assets in the game project*
 
-[codelens]: https://learn.microsoft.com/en-us/visualstudio/ide/find-code-changes-and-other-history-with-codelens?view=vs-2022
+![figure 4](./images/test_options.png) \
+*Figure 3 - Menu to change options for Tests Discovery
 
 ## Troubleshooting
 

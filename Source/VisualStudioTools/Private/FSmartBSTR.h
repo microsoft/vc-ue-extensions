@@ -9,22 +9,52 @@ public:
 	{
 	}
 
-	FSmartBSTR(const FString &Other)
+	FSmartBSTR(const FSmartBSTR& Other)
+	{
+		if (Other.data) data = SysAllocString(Other.data);
+		else data = nullptr;
+	}
+
+	FSmartBSTR(FSmartBSTR&& Other)
+	{
+		data = Other.data;
+		Other.data = nullptr;
+	}
+
+	FSmartBSTR(const FString& Other)
 	{
 		data = SysAllocString(*Other);
 	}
 	
 	FSmartBSTR(const OLECHAR *Ptr)
 	{
-		data = SysAllocString(Ptr);
+		if (Ptr) data = SysAllocString(Ptr);
+		else data = nullptr;
 	}
 	
 	~FSmartBSTR()
 	{
 		if (data) SysFreeString(data);
 	}
+
+	FSmartBSTR& operator=(const FSmartBSTR& Other)
+	{
+		if (this == &Other) return *this;
+		if (data) SysFreeString(data);
+		if (Other.data) data = SysAllocString(Other.data);
+		else data = nullptr;
+		return *this;
+	}
+
+	FSmartBSTR& operator=(FSmartBSTR&& Other)
+	{
+		if (data) SysFreeString(data);
+		data = Other.data;
+		Other.data = nullptr;
+		return *this;
+	}
 	
-	BSTR operator*()
+	BSTR operator*() const
 	{
 		return data;
 	}

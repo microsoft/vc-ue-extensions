@@ -175,26 +175,14 @@ bool UVisualStudioToolsBlueprintBreakpointExtension::CanAddVisualStudioBreakpoin
 	const UK2Node_CallFunction* K2Node = Cast<const UK2Node_CallFunction>(Node);
 	if (!K2Node)
 	{
-		UE_LOG(LogUVisualStudioToolsBlueprintBreakpointExtension, Error, TEXT("Node is not a UK2Node_CallFunction"));
-
-		auto a = Cast<const UK2Node>(Node);
-		if (a)
-		{
-			auto b = a->GetOuter();
-			auto c = Cast<UBlueprint>(b->GetOuter());
-			UE_LOG(LogUVisualStudioToolsBlueprintBreakpointExtension, Error, TEXT("Node is a UK2Node %p %p %p"), a, b, c);
-		}
-		else
-		{
-			UE_LOG(LogUVisualStudioToolsBlueprintBreakpointExtension, Error, TEXT("Node is not a UK2Node"));
-		}
+		UE_LOG(LogUVisualStudioToolsBlueprintBreakpointExtension, Verbose, TEXT("Node is not a UK2Node_CallFunction"));
 		return false;
 	}
 
 	UFunction* Function = K2Node->GetTargetFunction();
 	if (!Function || !Function->IsNative())
 	{
-		UE_LOG(LogUVisualStudioToolsBlueprintBreakpointExtension, Error, TEXT("Function is not native"));
+		UE_LOG(LogUVisualStudioToolsBlueprintBreakpointExtension, Verbose, TEXT("Function is not native"));
 		return false;
 	}
 
@@ -203,7 +191,7 @@ bool UVisualStudioToolsBlueprintBreakpointExtension::CanAddVisualStudioBreakpoin
 	UClass* OwnerClass = Function->GetOwnerClass();
 	if (!OwnerClass->HasAllClassFlags(CLASS_Native))
 	{
-		UE_LOG(LogUVisualStudioToolsBlueprintBreakpointExtension, Error, TEXT("Owning class is not native"));
+		UE_LOG(LogUVisualStudioToolsBlueprintBreakpointExtension, Verbose, TEXT("Owning class is not native"));
 		return false;
 	}
 
@@ -325,9 +313,9 @@ void UVisualStudioToolsBlueprintBreakpointExtension::ShowOperationResultNotifica
 #if ENGINE_MAJOR_VERSION >=5 && ENGINE_MINOR_VERSION >= 1
 	Info.Image = FAppStyle::GetBrush(TEXT("LevelEditor.RecompileGameCode"));
 #else
-    Info.Image = FEditorStyle::GetBrush(TEXT("LevelEditor.RecompileGameCode"));
+	Info.Image = FEditorStyle::GetBrush(TEXT("LevelEditor.RecompileGameCode"));
 #endif
-    Info.FadeInDuration = 0.1f;
+	Info.FadeInDuration = 0.1f;
 	Info.FadeOutDuration = 0.5f;
 	Info.ExpireDuration = 3.0f;
 	Info.bUseThrobber = false;

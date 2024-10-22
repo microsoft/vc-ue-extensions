@@ -20,8 +20,8 @@ class UVisualStudioToolsBlueprintBreakpointExtension : public UEditorSubsystem
 public:
 	DECLARE_MULTICAST_DELEGATE_ThreeParams(FOnNodeMenuExtensionHookRequestDelegate, const UEdGraphNode*, const UEdGraph*, TSet<FName>&);
 
-	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
-	virtual void Deinitialize() override;
+	void Initialize(FSubsystemCollectionBase& Collection) override;
+	void Deinitialize() override;
 
 	FOnNodeMenuExtensionHookRequestDelegate& OnNodeMenuExtensionHookRequest() { return OnNodeMenuExtensionHookRequestDelegate; }
 

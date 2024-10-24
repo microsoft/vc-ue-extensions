@@ -1,6 +1,7 @@
 #pragma once
 
 #include "VisualStudioDTE.h"
+#include <utility>
 
 class FSmartBSTR
 {
@@ -17,8 +18,7 @@ public:
 
 	FSmartBSTR(FSmartBSTR&& Other)
 	{
-		data = Other.data;
-		Other.data = nullptr;
+		data = std::exchange(Other.data, nullptr);
 	}
 
 	FSmartBSTR(const FString& Other)
@@ -49,8 +49,7 @@ public:
 	FSmartBSTR& operator=(FSmartBSTR&& Other)
 	{
 		if (data) SysFreeString(data);
-		data = Other.data;
-		Other.data = nullptr;
+		data = std::exchange(Other.data, nullptr);
 		return *this;
 	}
 	

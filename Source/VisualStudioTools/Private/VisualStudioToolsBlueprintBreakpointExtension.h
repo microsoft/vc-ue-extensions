@@ -8,6 +8,7 @@
 #include <GraphEditorModule.h>
 #include <VisualStudioDTE.h>
 #include <Microsoft/COMPointer.h>
+#include <Runtime/Launch/Resources/Version.h>
 #include "VisualStudioToolsBlueprintBreakpointExtension.generated.h"
 
 DECLARE_LOG_CATEGORY_EXTERN(LogUVisualStudioToolsBlueprintBreakpointExtension, Log, All);
@@ -50,4 +51,14 @@ private:
 	FString GetProjectPath(const FString& ProjectDir);
 
 	bool GetRunningVisualStudioDTE(TComPtr<EnvDTE::_DTE>& OutDTE);
+
+	void AttachDebuggerIfNecessary(const TComPtr<EnvDTE::Debugger>& Debugger);
+
+	bool GetProcessById(const TComPtr<EnvDTE::Processes>& Processes, DWORD CurrentProcessId, TComPtr<EnvDTE::Process>& OutProcess);
+
+#if ENGINE_MAJOR_VERSION < 5
+	bool PreloadModule(HANDLE ProcessHandle, HMODULE ModuleHandle, const FString& RemoteStorage);
+
+	bool GetFunctionDefinitionLocation(const FString& FunctionSymbolName, const FString& FunctionModuleName, FString& SourceFilePath, uint32& SourceLineNumber);
+#endif
 };

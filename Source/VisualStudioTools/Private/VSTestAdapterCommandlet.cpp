@@ -214,66 +214,69 @@ int32 UVSTestAdapterCommandlet::Main(const FString& Params)
 	}
 
 	// Default to all the test filters.
-	auto filter = EAutomationTestFlags::ProductFilter | EAutomationTestFlags::SmokeFilter | EAutomationTestFlags::PerfFilter | EAutomationTestFlags::EngineFilter;
+	uint32 filter = static_cast<uint32>(EAutomationTestFlags::ProductFilter) |
+					static_cast<uint32>(EAutomationTestFlags::SmokeFilter) |
+					static_cast<uint32>(EAutomationTestFlags::PerfFilter) |
+					static_cast<uint32>(EAutomationTestFlags::EngineFilter);
 	if (ParamVals.Contains(FiltersParam))
 	{
 		FString filters = ParamVals[FiltersParam];
 		if (filters.Contains("smoke"))
 		{
-			filter |= EAutomationTestFlags::SmokeFilter;
+			filter = static_cast<uint32>(EAutomationTestFlags::SmokeFilter);
 		}
 		else
 		{
-			filter &= ~EAutomationTestFlags::SmokeFilter;
+			filter = ~static_cast<uint32>(EAutomationTestFlags::SmokeFilter);
 		}
 
 		if (filters.Contains("engine"))
 		{
-			filter |= EAutomationTestFlags::EngineFilter;
+			filter = static_cast<uint32>(EAutomationTestFlags::EngineFilter);
 		}
 		else
 		{
-			filter &= ~EAutomationTestFlags::EngineFilter;
+			filter = ~static_cast<uint32>(EAutomationTestFlags::EngineFilter);
 		}
 
 		if (filters.Contains("product"))
 		{
-			filter |= EAutomationTestFlags::ProductFilter;
+			filter = static_cast<uint32>(EAutomationTestFlags::ProductFilter);
 		}
 		else
 		{
-			filter &= ~EAutomationTestFlags::ProductFilter;
+			filter = ~static_cast<uint32>(EAutomationTestFlags::ProductFilter);
 		}
 
 		if (filters.Contains("perf"))
 		{
-			filter |= EAutomationTestFlags::PerfFilter;
+			filter = static_cast<uint32>(EAutomationTestFlags::PerfFilter);
 		}
 		else
 		{
-			filter &= ~EAutomationTestFlags::PerfFilter;
+			filter = ~static_cast<uint32>(EAutomationTestFlags::PerfFilter);
 		}
 
 		if (filters.Contains("stress"))
 		{
-			filter |= EAutomationTestFlags::StressFilter;
+			filter = static_cast<uint32>(EAutomationTestFlags::StressFilter);
 		}
 		else
 		{
-			filter &= ~EAutomationTestFlags::StressFilter;
+			filter = ~static_cast<uint32>(EAutomationTestFlags::StressFilter);
 		}
 
 		if (filters.Contains("negative"))
 		{
-			filter |= EAutomationTestFlags::NegativeFilter;
+			filter = static_cast<uint32>(EAutomationTestFlags::NegativeFilter);
 		}
 		else
 		{
-			filter &= ~EAutomationTestFlags::NegativeFilter;
+			filter = ~static_cast<uint32>(EAutomationTestFlags::NegativeFilter);
 		}
 	}
 
-	FAutomationTestFramework::GetInstance().SetRequestedTestFilter(filter);
+	FAutomationTestFramework::GetInstance().SetRequestedTestFilter(static_cast<EAutomationTestFlags>(filter));
 	if (ParamVals.Contains(ListTestsParam))
 	{
 		return ListTests(ParamVals[ListTestsParam]);

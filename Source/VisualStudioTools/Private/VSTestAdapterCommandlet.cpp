@@ -16,13 +16,13 @@ static constexpr auto RunTestsParam = TEXT("runtests");
 static constexpr auto TestResultsFileParam = TEXT("testresultfile");
 static constexpr auto HelpParam = TEXT("help");
 
-static void GetAllTests(TArray<FAutomationTestInfo>& OutTestList)
+static void GetAllTests(TArray<FAutomationTestInfo> &OutTestList)
 {
-	FAutomationTestFramework& Framework = FAutomationTestFramework::GetInstance();
+	FAutomationTestFramework &Framework = FAutomationTestFramework::GetInstance();
 	Framework.GetValidTestNames(OutTestList);
 }
 
-static void ReadTestsFromFile(const FString& InFile, TArray<FAutomationTestInfo>& OutTestList)
+static void ReadTestsFromFile(const FString &InFile, TArray<FAutomationTestInfo> &OutTestList)
 {
 	TSet<FString> TestCommands;
 
@@ -55,7 +55,7 @@ static void ReadTestsFromFile(const FString& InFile, TArray<FAutomationTestInfo>
 	}
 }
 
-static int32 ListTests(const FString& TargetFile)
+static int32 ListTests(const FString &TargetFile)
 {
 	std::wofstream OutFile(*TargetFile);
 	if (!OutFile.good())
@@ -64,12 +64,12 @@ static int32 ListTests(const FString& TargetFile)
 		return 1;
 	}
 
-	FAutomationTestFramework& Framework = FAutomationTestFramework::GetInstance();
+	FAutomationTestFramework &Framework = FAutomationTestFramework::GetInstance();
 
 	TArray<FAutomationTestInfo> TestInfos;
 	GetAllTests(TestInfos);
 
-	for (const auto& TestInfo : TestInfos)
+	for (const auto &TestInfo : TestInfos)
 	{
 		const FString TestCommand = TestInfo.GetTestName();
 		const FString DisplayName = TestInfo.GetDisplayName();
@@ -85,7 +85,7 @@ static int32 ListTests(const FString& TargetFile)
 	return 0;
 }
 
-static int32 RunTests(const FString& TestListFile, const FString& ResultsFile)
+static int32 RunTests(const FString &TestListFile, const FString &ResultsFile)
 {
 	std::wofstream OutFile(*ResultsFile);
 	if (!OutFile.good())
@@ -106,9 +106,9 @@ static int32 RunTests(const FString& TestListFile, const FString& ResultsFile)
 
 	bool AllSuccessful = true;
 
-	FAutomationTestFramework& Framework = FAutomationTestFramework::GetInstance();
+	FAutomationTestFramework &Framework = FAutomationTestFramework::GetInstance();
 
-	for (const FAutomationTestInfo& TestInfo : TestInfos)
+	for (const FAutomationTestInfo &TestInfo : TestInfos)
 	{
 		const FString TestCommand = TestInfo.GetTestName();
 		const FString DisplayName = TestInfo.GetDisplayName();
@@ -149,7 +149,7 @@ static int32 RunTests(const FString& TestListFile, const FString& ResultsFile)
 
 		if (!CurrentTestSuccessful)
 		{
-			for (const auto& Entry : ExecutionInfo.GetEntries())
+			for (const auto &Entry : ExecutionInfo.GetEntries())
 			{
 				if (Entry.Event.Type == EAutomationEventType::Error)
 				{
@@ -199,7 +199,7 @@ void UVSTestAdapterCommandlet::PrintHelp() const
 	}
 }
 
-int32 UVSTestAdapterCommandlet::Main(const FString& Params)
+int32 UVSTestAdapterCommandlet::Main(const FString &Params)
 {
 	TArray<FString> Tokens;
 	TArray<FString> Switches;

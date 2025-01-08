@@ -25,6 +25,11 @@
 			"PlatformAllowList": [
 				"Win64"
 			]
+		},
+		{
+			"Name": "VisualStudioBlueprintDebuggerHelper",
+			"Type": "Editor",
+			"LoadingPhase": "Default"
 		}
 	]
 }

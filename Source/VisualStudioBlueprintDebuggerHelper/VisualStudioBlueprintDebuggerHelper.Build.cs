@@ -1,3 +1,5 @@
+// Copyright 2022 (c) Microsoft. All rights reserved.
+
 using UnrealBuildTool;
 
 public class VisualStudioBlueprintDebuggerHelper: ModuleRules

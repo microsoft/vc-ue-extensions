@@ -1,3 +1,5 @@
+// Copyright 2022 (c) Microsoft. All rights reserved.
+
 #pragma once
 
 #include <CoreMinimal.h>
@@ -22,6 +24,6 @@ private:
 	int32 CurrentScriptEntryTag;
 
 public:
-	virtual void StartupModule() override;
-	virtual void ShutdownModule() override;
+	void StartupModule() override;
+	void ShutdownModule() override;
 };

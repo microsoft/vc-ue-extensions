@@ -1,7 +1,7 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "2.5",
+	"VersionName": "2.6",
 	"FriendlyName": "Visual Studio Integration Tools",
 	"Description": "Enables integration with Visual Studio IDE.",
 	"Category": "Programming",

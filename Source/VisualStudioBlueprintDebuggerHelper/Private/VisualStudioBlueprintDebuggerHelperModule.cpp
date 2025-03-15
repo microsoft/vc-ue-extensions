@@ -11,6 +11,7 @@
 #include <UObject/Class.h>
 #include <Engine/BlueprintGeneratedClass.h>
 #include <Engine/Blueprint.h>
+#include <Runtime/Launch/Resources/Version.h>
 #if ENGINE_MAJOR_VERSION >= 5 && ENGINE_MINOR_VERSION >= 4
 #include <Blueprint/BlueprintExceptionInfo.h>
 #endif

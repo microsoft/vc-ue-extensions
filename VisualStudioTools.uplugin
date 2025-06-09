@@ -29,7 +29,7 @@
 		{
 			"Name": "VisualStudioBlueprintDebuggerHelper",
 			"Type": "Editor",
-			"LoadingPhase": "Default",
+			"LoadingPhase": "None",
 			"PlatformAllowList": [
 				"Win64"
 			]

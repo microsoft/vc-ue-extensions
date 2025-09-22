@@ -19,12 +19,13 @@ public class VisualStudioTools : ModuleRules
             // proper local variable inspection and less inlined stack frames
             OptimizeCode = CodeOptimization.Never;
 
-            // Enable more restrict warnings during compilation in UE5.
+            // Enable more restricted warnings during compilation in UE5.
             // Required by tasks in the compliance pipeline.
-            if (Target.Version.MajorVersion >= 5)
-            {
+            #if UE_5_6_OR_LATER
+                CppCompileWarningSettings.UnsafeTypeCastWarningLevel = WarningLevel.Error;
+            #elif UE_5_0_OR_LATER
                 UnsafeTypeCastWarningLevel = WarningLevel.Error;
-            }
+            #endif
         }
         else
         {

@@ -48,6 +48,8 @@ extends:
       os: windows
     customBuildTags:
     - ES365AIMigrationTooling
+    settings:
+      networkIsolationPolicy: Permissive,CFSClean,CFSClean2,CFSClean3
     stages:
     - stage: stage
       jobs:
@@ -92,6 +94,7 @@ extends:
               command: 'restore'
               restoreSolution: 'Scripts/SignDetached.proj'
               feedsToUse: 'config'
+              nugetConfigPath: '$(Build.SourcesDirectory)/NuGet.config'
               restoreDirectory: '$(Build.SourcesDirectory)\Scripts\packages'
           - task: MSBuild@1
             displayName: Sign catalogs

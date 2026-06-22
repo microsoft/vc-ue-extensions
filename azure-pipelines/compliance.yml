@@ -72,6 +72,15 @@ extends:
         - task: MSBuild@1
           displayName: 'Build Plugin'
           timeoutInMinutes: 300
+          env:
+            # Building the plugin compiles Unreal Engine's own C# tooling (UnrealBuildTool,
+            # AutomationTool, EpicGames.*), which restores NuGet packages. Those projects live in
+            # the cloned UE tree (a sibling of this repo), so NuGet's directory walk never finds the
+            # repo-root NuGet.config and falls back to api.nuget.org, which is blocked under network
+            # isolation (Permissive,CFSClean,CFSClean2,CFSClean3) -> NU1301. Setting RestoreConfigFile
+            # forces every restore in this step's process tree (msbuild -> build.proj -> RunUAT ->
+            # dotnet build) to use the repo's CFS-only NuGet.config instead.
+            RestoreConfigFile: '$(Build.SourcesDirectory)/NuGet.config'
           inputs:
             solution: '$(Build.SourcesDirectory)/build.proj'
             msbuildArguments: '/p:UnrealEngine=$(Agent.BuildDirectory)\ue /p:OutputPath=$(Build.ArtifactStagingDirectory)\drop /p:VulkanReadyBinaries=true'

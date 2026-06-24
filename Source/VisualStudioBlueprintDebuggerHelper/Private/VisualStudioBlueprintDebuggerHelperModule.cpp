@@ -19,6 +19,7 @@
 #include <HAL/Platform.h>
 #include <EdGraph/EdGraphNode.h>
 #include <EdGraph/EdGraphPin.h>
+#include <K2Node_MacroInstance.h>
 #include <Templates/SharedPointer.h>
 #include <Templates/Tuple.h>
 #include <CoreGlobals.h>
@@ -54,9 +55,16 @@ struct FVSNodeData
 	const UEdGraphNode* Node;
 };
 
+struct FVSNodesRuntimeLoopInformation
+{
+	const UEdGraphNode* LoopNode;
+	const UEdGraphNode* LoopBodyNode;
+};
+
 struct FVSNodesRuntimeInformation
 {
 	TArray<TSharedPtr<FVSNodeData>> Nodes;
+	TArray<FVSNodesRuntimeLoopInformation> LoopInfos;
 };
 
 struct FVSBlueprintRuntimeInformation
@@ -205,6 +213,63 @@ void FVisualStudioBlueprintDebuggerHelper::OnScriptException(
 	else
 	{
 		NodesRuntimeInformation = ExistingNodesRuntimeInformationTuple->Value;
+	}
+
+	// Loop nodes are specialized 
+	// Loop nodes are pseudo-loops internally with Sequence nodes 
+	// VisualStudioBlueprintDebuggerHelper stores the paths followed by Blueprint nodes 
+	// Number of Loops * The number of paths is increased when the number of loops is huge. 
+	// Attempts to reduce the processing load by reducing the number of paths saved in a loop by deleting the paths executed in the previously passed LoopBody every time a node connected to the LoopBody of the Loop is passed. An attempt to reduce the processing load
+	if (const UK2Node_MacroInstance* MacroInstance = Cast<UK2Node_MacroInstance>(NodeStoppedAt))
+	{
+		static const FName StandardMacrosPackageName = TEXT("/Engine/EditorBlueprintResources/StandardMacros");
+		const UBlueprint* SourceBlueprint = MacroInstance->GetSourceBlueprint();
+		if (SourceBlueprint->GetPackage()->GetFName() == StandardMacrosPackageName)
+		{
+			const FName MacroGraphName = MacroInstance->GetMacroGraph()->GetFName();
+			if (MacroGraphName == TEXT("ForLoop") ||
+				MacroGraphName == TEXT("ForLoopWithBreak") ||
+				MacroGraphName == TEXT("ForEachLoop") ||
+				MacroGraphName == TEXT("ForEachLoopWithBreak") ||
+				MacroGraphName == TEXT("ReverseForEachLoop") ||
+				MacroGraphName == TEXT("WhileLoop"))
+			{
+				const UEdGraphPin* LoopBodyPin = MacroInstance->FindPin(TEXT("LoopBody"));
+				if (LoopBodyPin && !LoopBodyPin->LinkedTo.IsEmpty())
+				{
+					const UEdGraphPin* LinkedToPin = LoopBodyPin->LinkedTo[0];
+					if (LinkedToPin)
+					{
+						const UEdGraphNode* LoopBodyNode = LinkedToPin->GetOwningNode();
+						if (LoopBodyNode)
+						{
+							FVSNodesRuntimeLoopInformation LoopByNodeInfo;
+							LoopByNodeInfo.LoopNode = MacroInstance;
+							LoopByNodeInfo.LoopBodyNode = LoopBodyNode;
+							NodesRuntimeInformation->LoopInfos.Add(LoopByNodeInfo);
+						}
+					}
+				}
+			}
+		}
+	}
+
+	if (!NodesRuntimeInformation->LoopInfos.IsEmpty())
+	{
+		const FVSNodesRuntimeLoopInformation& LastLoopInfomation = NodesRuntimeInformation->LoopInfos[NodesRuntimeInformation->LoopInfos.Num() - 1];
+		if (LastLoopInfomation.LoopBodyNode == NodeStoppedAt)
+		{
+			for (int32 NodeIndex = NodesRuntimeInformation->Nodes.Num() - 1; NodeIndex >= 0; --NodeIndex)
+			{
+				TSharedPtr<FVSNodeData>& Node = NodesRuntimeInformation->Nodes[NodeIndex];
+				if (Node->Node == LastLoopInfomation.LoopNode)
+				{
+					break;
+				}
+
+				NodesRuntimeInformation->Nodes.RemoveAt(NodeIndex);
+			}
+		}
 	}
 
 	TSharedPtr<FVSNodeData> CurrentNodeData;

@@ -2,7 +2,7 @@
 #include "FSmartBSTR.h"
 #include <Modules/ModuleManager.h>
 #include <Framework/MultiBox/MultiBoxBuilder.h>
-#include <BlueprintGraphClasses.h>
+#include <K2Node_CallFunction.h>
 #include <EditorSubsystem.h>
 #include <unknwn.h>
 #include <Windows/WindowsPlatformStackWalk.h>

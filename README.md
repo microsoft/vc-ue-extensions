@@ -42,7 +42,7 @@ The most straightforward way to use the plugin is to clone the repo under the `P
 
    3.2. To Engine folder:
    ```powershell
-   move-item -path ./bin -destination <AbsolutePathToEngine\Engine\Plugins
+   move-item -path ./bin -destination <AbsolutePathToEngine>\Engine\Plugins\VisualStudioTools
    ```
 
 2. Optional: Regenerate the Solution for your game project so that the plugin source will be visible in Visual Studio.
